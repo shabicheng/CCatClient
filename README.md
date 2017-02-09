@@ -1,2 +1,2 @@
 # CCatClient
-cat client for dianping
+cat client for study
