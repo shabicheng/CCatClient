@@ -31,3 +31,11 @@
 # Debug files
 *.dSYM/
 *.su
+
+
+.vs
+
+Debug
+Release
+*.db
+*.opendb
