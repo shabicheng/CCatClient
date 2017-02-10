@@ -41,13 +41,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -148,21 +148,63 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\CCatClient\adlist.c" />
     <ClCompile Include="..\src\CCatClient\ae.c" />
     <ClCompile Include="..\src\CCatClient\anet.c" />
+    <ClCompile Include="..\src\CCatClient\CatContext.c" />
+    <ClCompile Include="..\src\CCatClient\CatEncoder.c" />
+    <ClCompile Include="..\src\CCatClient\CatEvent.c" />
+    <ClCompile Include="..\src\CCatClient\CatHeartBeat.c" />
+    <ClCompile Include="..\src\CCatClient\CatMessage.c" />
+    <ClCompile Include="..\src\CCatClient\CatMessageManager.c" />
+    <ClCompile Include="..\src\CCatClient\CatMessageMergeAndEncode.c" />
+    <ClCompile Include="..\src\CCatClient\CatMessageSender.c" />
+    <ClCompile Include="..\src\CCatClient\CatMessigeIdHelper.c" />
+    <ClCompile Include="..\src\CCatClient\CatMetric.c" />
+    <ClCompile Include="..\src\CCatClient\CatMonitor.c" />
+    <ClCompile Include="..\src\CCatClient\CatRootMessage.c" />
+    <ClCompile Include="..\src\CCatClient\CatServerConnManager.c" />
+    <ClCompile Include="..\src\CCatClient\CatStatistics.c" />
+    <ClCompile Include="..\src\CCatClient\CatTrace.c" />
+    <ClCompile Include="..\src\CCatClient\CatTransaction.c" />
+    <ClCompile Include="..\src\CCatClient\CatTranscationHelper.c" />
+    <ClCompile Include="..\src\CCatClient\ZRLog.c" />
     <ClCompile Include="..\src\CCatClient\ZRSafeQueue.c" />
     <ClCompile Include="..\src\CCatClient\ZRStaticQueue.c" />
     <ClCompile Include="..\src\CCatClient\sds.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\CCatClient\adlist.h" />
     <ClInclude Include="..\src\CCatClient\ae.h" />
     <ClInclude Include="..\src\CCatClient\anet.h" />
     <ClInclude Include="..\src\CCatClient\CatClient.h" />
+    <ClInclude Include="..\src\CCatClient\CatContext.h" />
+    <ClInclude Include="..\src\CCatClient\CatEncoder.h" />
+    <ClInclude Include="..\src\CCatClient\CatEvent.h" />
+    <ClInclude Include="..\src\CCatClient\CatHeartBeat.h" />
+    <ClInclude Include="..\src\CCatClient\CatMessage.h" />
+    <ClInclude Include="..\src\CCatClient\CatMessageManager.h" />
+    <ClInclude Include="..\src\CCatClient\CatMessageMergeAndEncode.h" />
+    <ClInclude Include="..\src\CCatClient\CatMessageSender.h" />
+    <ClInclude Include="..\src\CCatClient\CatMessigeIdHelper.h" />
+    <ClInclude Include="..\src\CCatClient\CatMetric.h" />
+    <ClInclude Include="..\src\CCatClient\CatMonitor.h" />
+    <ClInclude Include="..\src\CCatClient\CatRootMessage.h" />
+    <ClInclude Include="..\src\CCatClient\CatServerConnManager.h" />
+    <ClInclude Include="..\src\CCatClient\CatStatistics.h" />
+    <ClInclude Include="..\src\CCatClient\CatTrace.h" />
+    <ClInclude Include="..\src\CCatClient\CatTransaction.h" />
+    <ClInclude Include="..\src\CCatClient\CatTranscationHelper.h" />
+    <ClInclude Include="..\src\CCatClient\TimeUtility.h" />
+    <ClInclude Include="..\src\CCatClient\ZRLog.h" />
     <ClInclude Include="..\src\CCatClient\ZRSafeQueue.h" />
     <ClInclude Include="..\src\CCatClient\ZRStaticQueue.h" />
     <ClInclude Include="..\src\CCatClient\sds.h" />
     <ClInclude Include="..\src\CCatClient\ZRLibraryGlobal.h" />
     <ClInclude Include="..\src\CCatClient\ZRMultiThreadUtility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

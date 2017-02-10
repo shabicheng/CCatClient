@@ -1,0 +1,5 @@
+#ifndef CATMESSIGEIDHELPER_h__
+#define CATMESSIGEIDHELPER_h__
+
+
+#endif//CATMESSIGEIDHELPER_h__

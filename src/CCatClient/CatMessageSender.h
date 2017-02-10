@@ -1,0 +1,5 @@
+#ifndef CATMESSAGESENDER_h__
+#define CATMESSAGESENDER_h__
+
+
+#endif//CATMESSAGESENDER_h__

@@ -137,3 +137,18 @@ void * pryFrontZRStaticQueue(ZRStaticQueue * pQueue)
 
     return pQueue->valueArray[pQueue->tail];
 }
+
+void * getZRStaticQueueByIndex(ZRStaticQueue * pQueue, size_t index)
+{
+	// unsafe
+	if (!pQueue->size || pQueue->size - 1 < index)
+	{
+		return NULL;
+	}
+	index += pQueue->tail;
+	if (index > pQueue->maxQueueSize)
+	{
+		index -= pQueue->maxQueueSize;
+	}
+	return pQueue->valueArray[index];
+}

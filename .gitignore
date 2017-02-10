@@ -39,3 +39,5 @@ Debug
 Release
 *.db
 *.opendb
+*.sdf
+*.suo

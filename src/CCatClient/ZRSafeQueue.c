@@ -5,7 +5,7 @@ ZRSafeQueue * createZRSafeQueue(size_t maxQueueSize)
     ZRSafeQueue * pQue = (ZRSafeQueue *)malloc(sizeof(ZRSafeQueue));
     if (pQue == NULL)
     {
-        return pQue;
+        return NULL;
     }
     pQue->queue = createZRStaticQueue(maxQueueSize);
     if (pQue->queue == NULL)
@@ -15,6 +15,7 @@ ZRSafeQueue * createZRSafeQueue(size_t maxQueueSize)
     }
     pQue->lock = ZRCreateCriticalSection();
     SEMA_INIT(pQue->getSema, 0, maxQueueSize);
+	return pQue;
 }
 
 int pushBackZRSafeQueue(ZRSafeQueue * pQueue, void * pData)
@@ -135,5 +136,33 @@ int popFrontManyZRSafeQueue(ZRSafeQueue * pQueue, void * pQueueArray[], int maxG
     return num;
 
 
+}
+
+void * pryBackZRSafeQueue(ZRSafeQueue * pQueue)
+{
+	
+	ZRCS_ENTER(pQueue->lock);
+	void * pData = pryBackZRStaticQueue(pQueue->queue);
+	ZRCS_LEAVE(pQueue->lock);
+
+	return pData;
+}
+
+void * pryFrontZRSafeQueue(ZRSafeQueue * pQueue)
+{
+	ZRCS_ENTER(pQueue->lock);
+	void * pData = pryFrontZRStaticQueue(pQueue->queue);
+	ZRCS_LEAVE(pQueue->lock);
+
+	return pData;
+}
+
+void * getZRSafeQueueByIndex(ZRSafeQueue * pQueue, size_t index)
+{
+	ZRCS_ENTER(pQueue->lock);
+	void * pData = getZRStaticQueueByIndex(pQueue->queue, index);
+	ZRCS_LEAVE(pQueue->lock);
+
+	return pData;
 }
 

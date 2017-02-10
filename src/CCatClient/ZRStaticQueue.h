@@ -10,10 +10,10 @@
 
 typedef struct _ZRStaticQueue
 {
-    size_t maxQueueSize;
-    size_t head;
-    size_t tail;
-    size_t size;
+	size_t maxQueueSize;
+	volatile size_t head;
+	volatile size_t tail;
+    volatile size_t size;
     void * valueArray[];
 }ZRStaticQueue;
 
@@ -31,6 +31,8 @@ void * popFrontZRStaticQueue(ZRStaticQueue * pQueue);
 void * pryBackZRStaticQueue(ZRStaticQueue * pQueue);
 void * pryFrontZRStaticQueue(ZRStaticQueue * pQueue);
 
+void * getZRStaticQueueByIndex(ZRStaticQueue * pQueue, size_t index);
+
 inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
 {
     return pQueue->size;
@@ -38,12 +40,12 @@ inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
 
 inline int isZRStaticQueueEmpty(ZRStaticQueue * pQueue)
 {
-    return pQueue->size == 0;
+    return pQueue->size;
 }
 
 inline int isZRStaticQueueFull(ZRStaticQueue * pQueue)
 {
-    return pQueue->size == pQueue->maxQueueSize;
+	return !(pQueue->maxQueueSize - pQueue->size);
 }
 
 inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
@@ -51,6 +53,25 @@ inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
     return pQueue->head - pQueue->tail;
 }
 
+typedef ZRStaticQueue ZRStaticStack;
+
+#define pushZRStaticStack pushBackZRStaticQueue
+#define popZRStaticStack popBackZRStaticQueue
+#define pryZRStaticStack pryBackZRStaticQueue
+#define getZRStaticStackSize getZRStaticQueueSize
+#define isZRStaticStackEmpty isZRStaticQueueEmpty
+#define isZRStaticStackFull isZRStaticQueueFull
+#define getZRStaticStackByIndex getZRStaticQueueByIndex
+
+typedef ZRStaticQueue ZRStaticFIFOQueue;
+
+#define inZRStaticFIFOQueue pushBackZRStaticQueue
+#define outZRStaticFIFOQueue popFrontZRStaticQueue
+#define pryZRStaticFIFOQueue pryFrontZRStaticQueue
+#define getZRStaticFIFOQueueSize getZRStaticQueueSize
+#define isZRStaticFIFOQueueEmpty isZRStaticQueueEmpty
+#define isZRStaticFIFOQueueFull isZRStaticQueueFull
+#define getZRStaticFIFOQueueByIndex getZRStaticQueueByIndex
 
 
 

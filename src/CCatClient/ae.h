@@ -50,21 +50,22 @@
 /* Macros */
 #define AE_NOTUSED(V) ((void) V)
 
-struct aeEventLoop;
+typedef struct _aeFileEvent aeFileEvent;
+typedef struct _aeEventLoop aeEventLoop;
 
 /* Types and data structures */
-typedef void aeFileProc(struct aeEventLoop *eventLoop, int fd, void *clientData, int mask);
-typedef int aeTimeProc(struct aeEventLoop *eventLoop, long long id, void *clientData);
-typedef void aeEventFinalizerProc(struct aeEventLoop *eventLoop, void *clientData);
-typedef void aeBeforeSleepProc(struct aeEventLoop *eventLoop);
+typedef void aeFileProc(aeEventLoop *eventLoop, int fd, void *clientData, int mask);
+typedef int aeTimeProc(aeEventLoop *eventLoop, long long id, void *clientData);
+typedef void aeEventFinalizerProc(aeEventLoop *eventLoop, void *clientData);
+typedef void aeBeforeSleepProc(aeEventLoop *eventLoop);
 
 /* File event structure */
-typedef struct _aeFileEvent {
+struct _aeFileEvent {
     int mask; /* one of AE_(READABLE|WRITABLE) */
     aeFileProc *rfileProc;
     aeFileProc *wfileProc;
     void *clientData;
-} aeFileEvent;
+};
 
 /* Time event structure */
 typedef struct _aeTimeEvent {

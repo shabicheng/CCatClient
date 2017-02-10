@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\Cat">
+      <UniqueIdentifier>{b964db6c-647c-40ff-8cc2-811b4d6faa31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Cat">
+      <UniqueIdentifier>{895d7a7d-0cfb-4154-ab63-fa61e44911cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\CCatClient\ae.c">
@@ -29,6 +35,63 @@
     </ClCompile>
     <ClCompile Include="..\src\CCatClient\ZRSafeQueue.c">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\adlist.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\ZRLog.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatContext.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatEncoder.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatEvent.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatHeartBeat.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMessage.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMessageManager.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMessageMergeAndEncode.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMessageSender.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMessigeIdHelper.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMetric.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatMonitor.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatRootMessage.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatServerConnManager.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatStatistics.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatTrace.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatTransaction.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatTranscationHelper.c">
+      <Filter>源文件\Cat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -47,14 +110,77 @@
     <ClInclude Include="..\src\CCatClient\ZRLibraryGlobal.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\CCatClient\CatClient.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\CCatClient\ZRStaticQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\CCatClient\ZRSafeQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\CCatClient\adlist.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\ZRLog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatTransaction.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatClient.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatContext.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatEncoder.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatEvent.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatHeartBeat.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMessage.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMessageManager.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMessageMergeAndEncode.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMessageSender.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMessigeIdHelper.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMetric.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatMonitor.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatRootMessage.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatServerConnManager.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatStatistics.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatTrace.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatTranscationHelper.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\TimeUtility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore" />
   </ItemGroup>
 </Project>
