@@ -6,10 +6,10 @@
 #include "CatEvent.h"
 
 
-static void	addChild(CatTranscation* message, CatMessage* childMsg)
+static void	addChild(CatTransaction* message, CatMessage* childMsg)
 {
 
-	CatTranscationInner * pInner = getInnerTrans(message);
+	CatTransactionInner * pInner = getInnerTrans(message);
 	int pushRst = pushBackZRStaticQueue(pInner->m_children, childMsg);
 	if (ZRSTATICQUEUE_ERR == pushRst)
 	{
@@ -19,7 +19,7 @@ static void	addChild(CatTranscation* message, CatMessage* childMsg)
 
 static void * clear(CatMessage* message)
 {
-	CatTranscationInner * pInner = getInnerTrans(message);
+	CatTransactionInner * pInner = getInnerTrans(message);
 	pInner->clear(message);
 	for (size_t i = 0; i < getZRStaticQueueSize(pInner->m_children); ++i)
 	{
@@ -30,7 +30,7 @@ static void * clear(CatMessage* message)
 
 static void setTransactionComplete(CatMessage * message)
 {
-	CatTranscationInner * pInner = getInnerTrans(message);
+	CatTransactionInner * pInner = getInnerTrans(message);
 	// complete() was called more than once
 	if (pInner->m_completeFlag)
 	{
@@ -48,21 +48,72 @@ static void setTransactionComplete(CatMessage * message)
 	}
 }
 
-CatTranscation * createCatTranscation(const char *type, const char * name)
+static ZRStaticQueue * getChildren(CatTransaction* message)
 {
-	CatTranscationInner * pTransInner = malloc(sizeof(CatTranscation) + sizeof(CatTranscationInner));
+    CatTransactionInner * pInner = getInnerTrans(message);
+    return pInner->m_children;
+}
+
+CatTransaction * createCatTransaction(const char *type, const char * name)
+{
+	CatTransactionInner * pTransInner = malloc(sizeof(CatTransaction) + sizeof(CatTransactionInner));
 	if (pTransInner == NULL)
 	{
 		return NULL;
 	}
-	CatTranscation * pTrans = (CatTranscation *)(((char *)pTransInner + sizeof(CatTranscation)));
+	CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransaction)));
 	initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
-	pTransInner->m_children = createZRStaticQueue(256);
+	pTransInner->m_children = createZRStaticQueue(MAX_TRANSCACTION_CHILD_NUM);
 	// ÉèÖÃ
 	// 
 	pTrans->setComplete = setTransactionComplete;
 	pTrans->addChild = addChild;
 	pTrans->clear = clear;
+    pTrans->getChildren = getChildren;
 	return pTrans;
+}
+
+unsigned long long getCatTranscationDurationUs(CatTransaction * trans)
+{
+    CatTransactionInner * pInner = getInnerTrans(trans);
+    if (pInner->m_durationUs >= 0)
+    {
+        return pInner->m_durationUs;
+    }
+    else
+    {
+        unsigned long long tmpDuration = 0;
+        size_t len = pInner->m_children == NULL ? 0 : getZRStaticStackSize(pInner->m_children);
+        if (len > 0)
+        {
+            CatMessage * lastChild = getZRStaticStackByIndex(pInner->m_children, len - 1);
+            CatMessageInner * lastChildInner = getInnerMsg(lastChild);
+            tmpDuration = (lastChildInner->m_timeStamp - pInner->m_timeStamp) * 1000;
+//             if (isCatTransaction(lastChild))
+//             {
+//                 CatTransactionInner * pInner = getInnerTrans(trans);
+//                 DefaultTransaction trx = (DefaultTransaction)lastChild;
+// 
+//                 duration = (trx.getTimestamp() - getTimestamp()) * 1000L;
+//             }
+//             else 
+//             {
+//                 duration = (lastChild.getTimestamp() - getTimestamp()) * 1000L;
+//             }
+        }
+        return tmpDuration;
+    }
+    
+}
+
+CatTransaction * copyCatTransaction(CatTransaction * pSrcTrans)
+{
+    CatTransactionInner * pSrcTransInner = getInnerTrans(pSrcTrans);
+    CatTransaction * clonedTrans = createCatTransaction(pSrcTransInner->m_type, pSrcTransInner->m_name);
+    CatTransactionInner * clonedTransInner = getInnerTrans(clonedTrans);
+    clonedTransInner->m_timeStamp = pSrcTransInner->m_timeStamp;
+    clonedTransInner->m_durationUs = getCatTranscationDurationUs(pSrcTrans);
+    clonedTransInner->m_data = sdsdup(pSrcTransInner->m_data);
+    return clonedTrans;
 }
 

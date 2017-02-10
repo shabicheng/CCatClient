@@ -182,5 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
+    <None Include="..\Cat客户端代码阅读.md" />
   </ItemGroup>
 </Project>

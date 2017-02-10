@@ -152,3 +152,15 @@ void * getZRStaticQueueByIndex(ZRStaticQueue * pQueue, size_t index)
 	}
 	return pQueue->valueArray[index];
 }
+
+void clearZRStaticQueue(ZRStaticQueue * pQueue)
+{
+    pQueue->head = 0;
+    pQueue->size = 0;
+    pQueue->tail = 0;
+}
+
+void destroyZRStaticQueue(ZRStaticQueue * pQueue)
+{
+    free(pQueue);
+}

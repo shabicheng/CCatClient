@@ -32,6 +32,10 @@ void * pryFrontZRSafeQueue(ZRSafeQueue * pQueue);
 
 void * getZRSafeQueueByIndex(ZRSafeQueue * pQueue, size_t index);
 
+void clearZRSafeQueue(ZRSafeQueue * pQueue);
+
+void destroyZRSafeQueue(ZRSafeQueue * pQueue);
+
 // 下面这些加锁也没啥用，干脆不加
 inline int getZRSafeQueueSize(ZRSafeQueue * pQueue)
 {
@@ -52,13 +56,15 @@ int popFrontManyZRSafeQueue(ZRSafeQueue * pQueue, void * pQueueArray[], int maxG
 
 typedef ZRSafeQueue ZRSafeStack;
 
-#define pushZRSafeStack pushBackZRSafeQueue
-#define popZRSafeStack popBackZRSafeQueue
+#define pushZRSafeStack pushFrontZRSafeQueue
+#define popZRSafeStack popFrontZRSafeQueue
 #define pryZRSafeStack pryBackZRSafeQueue
 #define getZRSafeStackSize getZRSafeQueueSize
 #define isZRSafeStackEmpty isZRSafeQueueEmpty
 #define isZRSafeStackFull isZRSafeQueueFull
 #define getZRSafeStackByIndex getZRSafeQueueByIndex
+#define clearZRSafeStack clearZRSafeQueue
+#define destroyZRSafeStack destroyZRSafeQueue
 
 typedef ZRSafeQueue ZRSafeFIFOQueue;
 
@@ -69,6 +75,8 @@ typedef ZRSafeQueue ZRSafeFIFOQueue;
 #define isZRSafeFIFOQueueEmpty isZRSafeQueueEmpty
 #define isZRSafeFIFOQueueFull isZRSafeQueueFull
 #define getZRSafeFIFOQueueByIndex getZRSafeQueueByIndex
+#define clearZRSafeFIFOQueue clearZRSafeQueue
+#define destroyZRSafeFIFOQueue destroyZRSafeQueue
 
 
 

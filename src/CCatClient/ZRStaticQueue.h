@@ -33,6 +33,9 @@ void * pryFrontZRStaticQueue(ZRStaticQueue * pQueue);
 
 void * getZRStaticQueueByIndex(ZRStaticQueue * pQueue, size_t index);
 
+void clearZRStaticQueue(ZRStaticQueue * pQueue);
+void destroyZRStaticQueue(ZRStaticQueue * pQueue);
+
 inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
 {
     return pQueue->size;
@@ -55,13 +58,15 @@ inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
 
 typedef ZRStaticQueue ZRStaticStack;
 
-#define pushZRStaticStack pushBackZRStaticQueue
-#define popZRStaticStack popBackZRStaticQueue
-#define pryZRStaticStack pryBackZRStaticQueue
+#define pushZRStaticStack pushFrontZRStaticQueue
+#define popZRStaticStack popFrontZRStaticQueue
+#define pryZRStaticStack pryFrontZRStaticQueue
 #define getZRStaticStackSize getZRStaticQueueSize
 #define isZRStaticStackEmpty isZRStaticQueueEmpty
 #define isZRStaticStackFull isZRStaticQueueFull
 #define getZRStaticStackByIndex getZRStaticQueueByIndex
+#define clearZRStaticStack clearZRStaticQueue
+#define destroyZRStaticStack destroyZRStaticQueue
 
 typedef ZRStaticQueue ZRStaticFIFOQueue;
 
@@ -72,6 +77,8 @@ typedef ZRStaticQueue ZRStaticFIFOQueue;
 #define isZRStaticFIFOQueueEmpty isZRStaticQueueEmpty
 #define isZRStaticFIFOQueueFull isZRStaticQueueFull
 #define getZRStaticFIFOQueueByIndex getZRStaticQueueByIndex
+#define clearZRStaticFIFOQueue clearZRStaticQueue
+#define destroyZRStaticFIFOQueue destroyZRStaticQueue
 
 
 

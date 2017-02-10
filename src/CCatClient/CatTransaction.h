@@ -5,8 +5,10 @@
 #include "CatMessage.h"
 #include "ZRStaticQueue.h"
 
+#define MAX_TRANSCACTION_CHILD_NUM 200
 
-typedef struct _CatTranscation CatTranscation;
+
+typedef struct _CatTranscation CatTransaction;
 
 typedef struct _CatTranscationInner
 {
@@ -27,7 +29,7 @@ typedef struct _CatTranscationInner
 	void *(*clear)   (CatMessage* message);
 
 
-}CatTranscationInner;
+}CatTransactionInner;
 
 
 struct _CatTranscation
@@ -37,12 +39,17 @@ struct _CatTranscation
 	void(*setStatus) (CatMessage* message, const char *status);
 	void(*setComplete)  (CatMessage* message);
 	void *(*clear)   (CatMessage* message);
-	void(*addChild)    (CatTranscation* message, CatMessage* childMsg);
+    void(*addChild)    (CatTransaction* message, CatMessage* childMsg);
+    ZRStaticQueue *(*getChildren)    (CatTransaction* message);
 };
 
-CatTranscation * createCatTranscation(const char *type, const char * name);
+CatTransaction * createCatTransaction(const char *type, const char * name);
+
+CatTransaction * copyCatTransaction(CatTransaction * pSrcTrans);
+
+unsigned long long getCatTranscationDurationUs(CatTransaction * trans);
 
 
-#define getInnerTrans(pMsg) ((CatTranscationInner*)(((char*)(pMsg)) - sizeof(CatTranscationInner)))
+#define getInnerTrans(pMsg) ((CatTransactionInner*)(((char*)(pMsg)) - sizeof(CatTransactionInner)))
 
 #endif//CATTRANSACTION_h__

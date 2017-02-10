@@ -25,11 +25,11 @@ void setTraceMode(int mode);
 
 
 void catContextAdd(CatMessage * message);
-void catContextAddTransChild(CatMessage * message, CatTranscation * trans);
-void catContextAdjustForTruncatedTrans(CatTranscation * root);
-void catContextStartTrans(CatTranscation * trans);
-void catContextEndTrans(CatTranscation * trans);
-CatTranscation * catContextPeekTransaction();
+void catContextAddTransChild(CatMessage * message, CatTransaction * trans);
+void catContextAdjustForTruncatedTrans(CatTransaction * root);
+void catContextStartTrans(CatTransaction * trans);
+void catContextEndTrans(CatTransaction * trans);
+CatTransaction * catContextPeekTransaction();
 
 
 #endif//CATCONTEXT_h__

@@ -8,11 +8,16 @@
 
 typedef struct _CatMessage CatMessage;
 
+// @todo for wyp
 #define CatMessageType_Trans 'T'
 #define CatMessageType_Event 'E'
 #define CatMessageType_HeartBeat 'H'
 #define CatMessageType_Trace 'A'
 #define CatMessageType_Metric 'M'
+
+#define CAT_SUCCESS "success"
+#define CAT_ERROR "error"
+#define CAT_FAIL "fail"
 
 typedef struct _CatMessageInner
 {

@@ -166,3 +166,19 @@ void * getZRSafeQueueByIndex(ZRSafeQueue * pQueue, size_t index)
 	return pData;
 }
 
+void clearZRSafeQueue(ZRSafeQueue * pQueue)
+{
+    ZRCS_ENTER(pQueue->lock);
+    clearZRStaticQueue(pQueue->queue);
+    ZRCS_LEAVE(pQueue->lock);
+
+    return;
+}
+
+void destroyZRSafeQueue(ZRSafeQueue * pQueue)
+{
+    clearZRSafeQueue(pQueue);
+    ZRDeleteCriticalSection(pQueue->lock);
+    SEMA_DESTROY(pQueue->getSema);
+}
+

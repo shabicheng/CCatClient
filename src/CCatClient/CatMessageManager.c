@@ -5,7 +5,22 @@ void catMessageManagerAdd(CatMessage * message)
 
 }
 
-void catMessageManagerEndTrans(CatTranscation * message)
+void catMessageManagerEndTrans(CatTransaction * message)
+{
+
+}
+
+void catMessageManagerFlush(CatRootMessage * rootMsg)
+{
+
+}
+
+void catMessageManagerInitialize()
+{
+
+}
+
+void catMessageManagerStartTrans(CatTransaction * trans)
 {
 
 }

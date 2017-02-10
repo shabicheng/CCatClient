@@ -32,13 +32,13 @@ void catMessageManagerAdd(CatMessage * message);
  *
  * @param [in,out]	message	If non-null, the message.
  **************************************************************************************************/
-void catMessageManagerEndTrans(CatTranscation * trans);
+void catMessageManagerEndTrans(CatTransaction * trans);
 
 void catMessageManagerFlush(CatRootMessage * rootMsg);
 
 void catMessageManagerInitialize();
 
-void catMessageManagerStartTrans(CatTranscation * trans);
+void catMessageManagerStartTrans(CatTransaction * trans);
 
 
 
