@@ -15,7 +15,7 @@
 static ZRSafeQueue * g_cat_messageQueue = NULL;
 static CatRootMessage * g_cat_mergeMessage = NULL;
 static int g_cat_mergeCount = 0;
-static volatile int g_cat_stop = 0;
+static volatile int g_cat_mergeStop = 0;
 
 static sds g_cat_encodeBuf = NULL;
 
@@ -60,7 +60,7 @@ static DWORD WINAPI catMessageMergeAndEncodeFun(PVOID para)
 static void* catMessageMergeAndEncodeFun(void* para)
 #endif
 {
-    while (!g_cat_stop)
+    while (!g_cat_mergeStop)
     {
         CatRootMessage * pRootQueueMsg = popFrontZRSafeQueue(g_cat_messageQueue, 100);
         int mergeFlushFlag = 0;
@@ -153,7 +153,7 @@ void initCatMergeAndEncodeThread()
     g_cat_mergeMessage = createCatRootMessage();
     catChecktPtr(g_cat_mergeMessage);
     g_cat_mergeCount = 0;
-    g_cat_stop = 0;
+    g_cat_mergeStop = 0;
     // 默认开4M的缓冲区
     g_cat_encodeBuf = sdsnewlen(NULL, 4 * 1024 * 1024);
 #ifdef WIN32
@@ -171,9 +171,8 @@ void initCatMergeAndEncodeThread()
 
 void clearCatMergeAndEncodeThread()
 {
-    g_cat_stop = 1;
     // 等待线程退出
-    g_cat_stop = 1;
+    g_cat_mergeStop = 1;
     // 删除线程
 
 #ifdef _WIN32

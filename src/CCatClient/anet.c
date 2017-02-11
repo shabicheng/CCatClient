@@ -711,3 +711,13 @@ int anetSockName(int fd, char *ip, size_t ip_len, int *port) {
     }
     return 0;
 }
+
+int anetClose(int fd)
+{
+#ifdef WIN32
+    return closesocket(fd);
+#else
+    close(sockfd);
+#endif
+    return 1;
+}
