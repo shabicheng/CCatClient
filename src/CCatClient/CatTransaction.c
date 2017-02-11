@@ -4,6 +4,8 @@
 #include "CatMessageManager.h"
 #include "TimeUtility.h"
 #include "CatEvent.h"
+#include "CatClientConfig.h"
+#include "CLog.h"
 
 
 static void	addChild(CatTransaction* message, CatMessage* childMsg)
@@ -13,7 +15,8 @@ static void	addChild(CatTransaction* message, CatMessage* childMsg)
 	int pushRst = pushBackZRStaticQueue(pInner->m_children, childMsg);
 	if (ZRSTATICQUEUE_ERR == pushRst)
 	{
-		// @todo 强制刷新再push
+		// 按道理不会走到这
+        INNER_LOG(CLOG_ERROR, "为Trans添加子消息失败，队列已满 %d.", getZRStaticQueueSize(pInner->m_children));
 	}
 }
 
@@ -28,7 +31,7 @@ static void * clear(CatMessage* message)
 	return pInner;
 }
 
-static void setTransactionComplete(CatMessage * message)
+static void setTransactionComplete(CatTransaction * message)
 {
 	CatTransactionInner * pInner = getInnerTrans(message);
 	// complete() was called more than once
@@ -43,7 +46,7 @@ static void setTransactionComplete(CatMessage * message)
 	else
 	{
 		pInner->m_durationUs = GetTime64() * 1000 - pInner->m_durationStart / 1000;
-		pInner->setCompleteFlag(message, 1);
+		pInner->setCompleteFlag((CatMessage *)message, 1);
 		catMessageManagerEndTrans(message);
 	}
 }
@@ -63,7 +66,7 @@ CatTransaction * createCatTransaction(const char *type, const char * name)
 	}
 	CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransaction)));
 	initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
-	pTransInner->m_children = createZRStaticQueue(MAX_TRANSCACTION_CHILD_NUM);
+	pTransInner->m_children = createZRStaticQueue(g_config.maxChildSize);
 	// 设置
 	// 
 	pTrans->setComplete = setTransactionComplete;
@@ -88,7 +91,7 @@ unsigned long long getCatTranscationDurationUs(CatTransaction * trans)
         {
             CatMessage * lastChild = getZRStaticStackByIndex(pInner->m_children, len - 1);
             CatMessageInner * lastChildInner = getInnerMsg(lastChild);
-            tmpDuration = (lastChildInner->m_timeStamp - pInner->m_timeStamp) * 1000;
+            tmpDuration = (lastChildInner->m_timeStampMs - pInner->m_timeStamp) * 1000;
 //             if (isCatTransaction(lastChild))
 //             {
 //                 CatTransactionInner * pInner = getInnerTrans(trans);
@@ -116,4 +119,5 @@ CatTransaction * copyCatTransaction(CatTransaction * pSrcTrans)
     clonedTransInner->m_data = sdsdup(pSrcTransInner->m_data);
     return clonedTrans;
 }
+
 

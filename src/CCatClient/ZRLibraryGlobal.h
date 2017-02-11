@@ -13,10 +13,11 @@
 #include <errno.h>
 
 #ifdef WIN32
-
+#define inline __inline
 #include <winsock2.h>
 #include <sys/timeb.h>
 #include <windows.h>
+#include <process.h>
 
 typedef int socklen_t;
 

@@ -68,6 +68,7 @@ size_t sdsavail(const sds s);
 sds sdsgrowzero(sds s, size_t len);
 sds sdscatlen(sds s, const void *t, size_t len);
 sds sdscat(sds s, const char *t);
+sds sdscatchar(sds s, char c);
 sds sdscatsds(sds s, const sds t);
 sds sdscpylen(sds s, const char *t, size_t len);
 sds sdscpy(sds s, const char *t);

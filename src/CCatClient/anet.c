@@ -244,9 +244,21 @@ int anetSendTimeout(char *err, int fd, long long ms) {
  * that are actually already IPv4 or IPv6 addresses. This turns the function
  * into a validating / normalizing function. */
 int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
-                       int flags)
+                       int flags, int hexFlag)
 {
-
+    // 没填入host为获取本机地址
+    char hostname[255];
+    if (ipbuf == NULL)
+    {
+        if (gethostname(hostname, sizeof(hostname)) == 0)
+        {
+            ipbuf = hostname;
+        }
+        else
+        {
+            return ANET_ERR;
+        }
+    }
 
 #ifdef WIN32
     PHOSTENT hostinfo = NULL;
@@ -263,7 +275,26 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
 
     struct in_addr inaddr;
     inaddr.s_addr = ipValue;
-    strcpy(ipbuf, inet_ntoa(inaddr));
+    if (!hexFlag)
+    {
+        strcpy(ipbuf, inet_ntoa(inaddr));
+    }
+    else
+    {
+        unsigned char * ipValueS = (unsigned char *)&ipValue;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (ipValueS[i] > 16)
+            {
+                sprintf(ipbuf + (i << 1), "%x", (long)ipValueS[i]);
+            }
+            else
+            {
+
+                sprintf(ipbuf + (i << 1), "%0x", (long)ipValueS[i]);
+            }
+        }
+    }
 #else
 
     struct addrinfo hints, *info;
@@ -280,7 +311,26 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
     }
     if (info->ai_family == AF_INET) {
         struct sockaddr_in *sa = (struct sockaddr_in *)info->ai_addr;
-        inet_ntop(AF_INET, &(sa->sin_addr), ipbuf, ipbuf_len);
+        if (!hexFlag)
+        {
+            inet_ntop(AF_INET, &(sa->sin_addr), ipbuf, ipbuf_len);
+        }
+        else
+        {
+            unsigned char * ipValueS = (unsigned char *)(&sa->sin_addr.s_addr);
+            for (int i = 0; i < 4; ++i)
+            {
+                if (ipValueS[i] > 16)
+                {
+                    sprintf(ipbuf + (i << 1), "%x", (long)ipValueS[i]);
+                }
+                else
+                {
+
+                    sprintf(ipbuf + (i << 1), "%0x", (long)ipValueS[i]);
+                }
+            }
+        }
     } else {
         struct sockaddr_in6 *sa = (struct sockaddr_in6 *)info->ai_addr;
         inet_ntop(AF_INET6, &(sa->sin6_addr), ipbuf, ipbuf_len);
@@ -293,12 +343,19 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
 }
 
 int anetResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len) {
-    return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_NONE);
+    return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_NONE, 0);
 }
 
 int anetResolveIP(char *err, char *host, char *ipbuf, size_t ipbuf_len) {
-    return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_IP_ONLY);
+    return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_IP_ONLY, 0);
 }
+
+
+int anetResolveIPHex(char *err, char *host, char *ipbuf, size_t ipbuf_len)
+{
+    return anetGenericResolve(err, host, ipbuf, ipbuf_len, ANET_IP_ONLY, 1);
+}
+
 
 static int anetSetReuseAddr(char *err, int fd) {
     int yes = 1;

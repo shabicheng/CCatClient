@@ -1,19 +1,28 @@
+#include "sds.h"
+#ifndef CATCLIENTCONFIG_H
+#define CATCLIENTCONFIG_H
 
-#ifndef CATCLIENT_H
-#define CATCLIENT_H
 
-#ifdef WIN32
 
-#ifdef  CCATCLIENT_EXPORTS
-#define  CATCLIENT_EXPORT __declspec(dllexport)
-#else
-#define  CATCLIENT_EXPORT __declspec(dllimport)
-#endif
+typedef struct _CatClientConfig
+{
+    int serverNum;
+    sds * serverAddresses;
+    int messageEnableFlag;
+    int messageQueueSize;
+    int maxChildSize;
+    int maxContextElementSize;
+    int logFlag;
+    int logSaveFlag;
+    unsigned int logLevel;
+    sds configDir;
+    sds dataDir;
+    sds indexFileName;
+}CatClientConfig;
 
-#else
+extern CatClientConfig g_config;
 
-#define CATCLIENT_EXPORT
 
-#endif
+void initCatClientConfig();
 
-#endif //CATCLIENT_H
+#endif//CATCLIENTCONFIG_H

@@ -93,6 +93,21 @@
     <ClCompile Include="..\src\CCatClient\CatTranscationHelper.c">
       <Filter>源文件\Cat</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CLog.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\TimeUtility.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatClientCommon.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatClientConfig.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CCatClient\CatClient.c">
+      <Filter>源文件\Cat</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\CCatClient\ae.h">
@@ -177,6 +192,15 @@
       <Filter>头文件\Cat</Filter>
     </ClInclude>
     <ClInclude Include="..\src\CCatClient\TimeUtility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatClientConfig.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CatClientCommon.h">
+      <Filter>头文件\Cat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CCatClient\CLog.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

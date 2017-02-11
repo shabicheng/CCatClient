@@ -10,7 +10,8 @@ typedef struct _CatMessageManager
 {
 	sds m_domain;
 	sds m_hostname;
-	sds m_ip;
+    sds m_ip;
+    sds m_ipX;
 	long m_throttleTimes;
 }CatMessageManager;
 
@@ -36,7 +37,7 @@ void catMessageManagerEndTrans(CatTransaction * trans);
 
 void catMessageManagerFlush(CatRootMessage * rootMsg);
 
-void catMessageManagerInitialize();
+void catMessageManagerInitialize(const char * domain, const char * hostName);
 
 void catMessageManagerStartTrans(CatTransaction * trans);
 

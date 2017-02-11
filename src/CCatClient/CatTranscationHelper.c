@@ -2,12 +2,15 @@
 #include "CatContext.h"
 #include "CatEvent.h"
 #include "TimeUtility.h"
+#include "CatMessigeIdHelper.h"
+#include "sds.h"
+#include "CatMessageManager.h"
 
 
-void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransaction * target, int level)
+static void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransaction * target, size_t level)
 {
     // 拿到下一级的trans
-    CatTransaction * current = level < getZRStaticStackSize(pStack) ? (CatTransaction *)getZRStaticStackSize(pStack, level) : NULL;
+    CatTransaction * current = level < getZRStaticStackSize(pStack) ? (CatTransaction *)getZRStaticStackByIndex(pStack, level) : NULL;
     int shouldKeep = 0;
     CatTransactionInner * currentInner = getInnerTrans(current);
 
@@ -16,7 +19,7 @@ void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransact
     for (i = 0; i < getZRStaticQueueSize(children); ++i)
     {
         CatMessage * pMsg = getZRStaticQueueByIndex(children, i);
-        if (pMsg != current)
+        if (pMsg != (CatMessage *)current)
         {
             target->addChild(target, pMsg);
         }
@@ -25,10 +28,10 @@ void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransact
 
 
             CatTransaction * clonedTrans = copyCatTransaction(current);
-            clonedTrans->setStatus(clonedTrans, CAT_SUCCESS);
+            clonedTrans->setStatus((CatMessage *)clonedTrans, CAT_SUCCESS);
 
 
-            target->addChild(target, clonedTrans);
+            target->addChild(target, (CatMessage *)clonedTrans);
             migrateMessage(pStack, current, clonedTrans, level + 1);
             shouldKeep = 1;
         }
@@ -38,7 +41,7 @@ void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransact
     clearZRStaticQueue(children);
 
     if (shouldKeep) { // add it back
-        pushBackZRSafeQueue(children, current);
+        pushBackZRStaticQueue(children, current);
     }
 
   
@@ -48,7 +51,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 {
     CatRootMessage * pRootMsg = context->m_rootMsg;
     ZRStaticStack * pStack = context->m_transStack;
-    CatMessage * message = pRootMsg->m_message;
+    CatMessage * message = pRootMsg->m_rootMsg;
 
     if (!isCatTransaction(message))
     {
@@ -71,7 +74,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 
 
     CatTransaction * target = copyCatTransaction(source);
-    target->setStatus(target, CAT_SUCCESS);
+    target->setStatus((CatMessage *)target, CAT_SUCCESS);
 
 
     migrateMessage(pStack, source, target, 1);
@@ -95,7 +98,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
     // tree is the parent, and m_tree is the child.
     CatRootMessage * pCp = copyCatRootMessage(pRootMsg);
 
-    pCp->m_message = target;
+    pCp->m_rootMsg = (CatMessage *)target;
 
     // 注意，childId 是new出来的 id rootId 本身就是pRootMsg，所以不需要再次sdsdup出来
     pRootMsg->m_messageId = childId;

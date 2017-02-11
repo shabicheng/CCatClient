@@ -151,6 +151,9 @@
     <ClCompile Include="..\src\CCatClient\adlist.c" />
     <ClCompile Include="..\src\CCatClient\ae.c" />
     <ClCompile Include="..\src\CCatClient\anet.c" />
+    <ClCompile Include="..\src\CCatClient\CatClient.c" />
+    <ClCompile Include="..\src\CCatClient\CatClientCommon.c" />
+    <ClCompile Include="..\src\CCatClient\CatClientConfig.c" />
     <ClCompile Include="..\src\CCatClient\CatContext.c" />
     <ClCompile Include="..\src\CCatClient\CatEncoder.c" />
     <ClCompile Include="..\src\CCatClient\CatEvent.c" />
@@ -168,6 +171,8 @@
     <ClCompile Include="..\src\CCatClient\CatTrace.c" />
     <ClCompile Include="..\src\CCatClient\CatTransaction.c" />
     <ClCompile Include="..\src\CCatClient\CatTranscationHelper.c" />
+    <ClCompile Include="..\src\CCatClient\CLog.c" />
+    <ClCompile Include="..\src\CCatClient\TimeUtility.c" />
     <ClCompile Include="..\src\CCatClient\ZRLog.c" />
     <ClCompile Include="..\src\CCatClient\ZRSafeQueue.c" />
     <ClCompile Include="..\src\CCatClient\ZRStaticQueue.c" />
@@ -178,6 +183,8 @@
     <ClInclude Include="..\src\CCatClient\ae.h" />
     <ClInclude Include="..\src\CCatClient\anet.h" />
     <ClInclude Include="..\src\CCatClient\CatClient.h" />
+    <ClInclude Include="..\src\CCatClient\CatClientCommon.h" />
+    <ClInclude Include="..\src\CCatClient\CatClientConfig.h" />
     <ClInclude Include="..\src\CCatClient\CatContext.h" />
     <ClInclude Include="..\src\CCatClient\CatEncoder.h" />
     <ClInclude Include="..\src\CCatClient\CatEvent.h" />
@@ -195,6 +202,7 @@
     <ClInclude Include="..\src\CCatClient\CatTrace.h" />
     <ClInclude Include="..\src\CCatClient\CatTransaction.h" />
     <ClInclude Include="..\src\CCatClient\CatTranscationHelper.h" />
+    <ClInclude Include="..\src\CCatClient\CLog.h" />
     <ClInclude Include="..\src\CCatClient\TimeUtility.h" />
     <ClInclude Include="..\src\CCatClient\ZRLog.h" />
     <ClInclude Include="..\src\CCatClient\ZRSafeQueue.h" />

@@ -249,6 +249,22 @@ sds sdscatlen(sds s, const void *t, size_t len) {
     return s;
 }
 
+
+sds sdscatchar(sds s, char c)
+{
+    struct sdshdr *sh;
+    size_t curlen = sdslen(s);
+
+    s = sdsMakeRoomFor(s, 1);
+    if (s == NULL) return NULL;
+    sh = (void*)(s - (sizeof(struct sdshdr)));
+    s[curlen] = c;
+    s[curlen + 1] = c;
+    return s;
+}
+
+
+
 /* Append the specified null termianted C string to the sds string 's'.
  *
  * After the call, the passed sds string is no longer valid and all the

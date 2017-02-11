@@ -34,7 +34,7 @@ typedef LPCRITICAL_SECTION ZRCRITICALSECTION;
 /// * 
 /// * @date     2015/11/20 17:42:27
 /// ************************************************************************************************/
-inline ZRCRITICALSECTION ZRCreateCriticalSection()
+ZRCRITICALSECTION inline ZRCreateCriticalSection()
 {
 	ZRCRITICALSECTION cs = (CRITICAL_SECTION *)malloc(sizeof(CRITICAL_SECTION));
 	//assert(cs != INVALID_CRITSECT);
@@ -61,7 +61,7 @@ inline ZRCRITICALSECTION ZRCreateCriticalSection()
 /// * 
 /// * @date     2015/11/20 17:42:36
 /// ************************************************************************************************/
-inline void ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
+void inline ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 {
 	if (cs != INVALID_CRITSECT)
 	{

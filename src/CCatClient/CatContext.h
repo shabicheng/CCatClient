@@ -17,7 +17,7 @@ typedef struct _CatContext
 
 
 CatContext * getCatContext();
-CatRootMessage * getThreadLocalMessageTree();
+CatRootMessage * getContextMessageTree();
 int hasCatContext();
 void resetCatContext();
 int isTraceMode();
@@ -28,7 +28,7 @@ void catContextAdd(CatMessage * message);
 void catContextAddTransChild(CatMessage * message, CatTransaction * trans);
 void catContextAdjustForTruncatedTrans(CatTransaction * root);
 void catContextStartTrans(CatTransaction * trans);
-void catContextEndTrans(CatTransaction * trans);
+int catContextEndTrans(CatTransaction * trans);
 CatTransaction * catContextPeekTransaction();
 
 

@@ -5,6 +5,7 @@
 #include "sds.h"
 #include <string.h>
 #include <stdlib.h>
+#include "CatClientCommon.h"
 
 typedef struct _CatMessage CatMessage;
 
@@ -27,7 +28,7 @@ typedef struct _CatMessageInner
 	sds m_name;
 	sds m_status;
 	sds m_data;
-	unsigned long long m_timeStamp; //统一含义，sec*1000 + ms
+	unsigned long long m_timeStampMs; //统一含义，sec*1000 + ms
 	int m_completeFlag;
 	void(*setCompleteFlag)  (CatMessage* message, int completeFlag);
 	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
@@ -45,8 +46,47 @@ struct _CatMessage
 	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
 };
 
-int isCatMessageComplete(CatMessage* message);
-unsigned long long getCatMessageTimeStamp(CatMessage* message);
+
+#define getInnerMsg(pMsg) ((CatMessageInner*)(((char*)(pMsg)) - sizeof(CatMessageInner)))
+
+/**********************************************************************************************//**
+ * Deletes the message described by pMsg.
+ *
+ * @author	ZRZC
+ * @date	2017/2/10
+ *
+ * @param [in,out]	pMsg	If non-null, the message.
+ **************************************************************************************************/
+inline void deleteCatMessage(CatMessage * pMsg)
+{
+    void * pBuf = pMsg->clear(pMsg);
+    free(pBuf);
+}
+
+inline int isCatMessageComplete(CatMessage* message)
+{
+    CatMessageInner * pInner = getInnerMsg(message);
+    return pInner->m_completeFlag;
+}
+
+inline unsigned long long getCatMessageTimeStamp(CatMessage* message)
+{
+    CatMessageInner * pInner = getInnerMsg(message);
+    return pInner->m_timeStampMs;
+}
+
+inline void setCatMessageTimeStamp(CatMessage* message, unsigned long long timeMs)
+{
+    CatMessageInner * pInner = getInnerMsg(message);
+    pInner->m_timeStampMs = timeMs;
+}
+
+
+inline sds getCatMessageType(CatMessage* message)
+{
+    CatMessageInner * pInner = getInnerMsg(message);
+    return pInner->m_type;
+}
 
 /**********************************************************************************************//**
  * msg没有create方法，只有初始化方法，且只能被其他子类调用.
@@ -61,16 +101,5 @@ unsigned long long getCatMessageTimeStamp(CatMessage* message);
  **************************************************************************************************/
 void initCatMessage(CatMessage * pMsg, char msgType, const char *type, const char * name);
 
-/**********************************************************************************************//**
- * Deletes the message described by pMsg.
- *
- * @author	ZRZC
- * @date	2017/2/10
- *
- * @param [in,out]	pMsg	If non-null, the message.
- **************************************************************************************************/
-void deleteCatMessage(CatMessage * pMsg);
-
-#define getInnerMsg(pMsg) ((CatMessageInner*)(((char*)(pMsg)) - sizeof(CatMessageInner)))
 
 #endif//CATMESSAGE_h__

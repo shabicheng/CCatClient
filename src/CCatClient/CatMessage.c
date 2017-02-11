@@ -87,7 +87,7 @@ void initCatMessage(CatMessage * pMsg, char msgType, const char *type, const cha
 	CatMessageInner * pInner = getInnerMsg(pMsg);
 	memset(pMsg, 0, sizeof(CatMessage) + sizeof(CatMessageInner));
 	pInner->m_msgType = msgType;
-	pInner->m_timeStamp = GetTime64();
+	pInner->m_timeStampMs = GetTime64();
 	pInner->m_type = sdsnew(type);
 	pInner->m_name = sdsnew(name);
 	pInner->setCompleteFlag = setCompleteFlag;
@@ -99,23 +99,5 @@ void initCatMessage(CatMessage * pMsg, char msgType, const char *type, const cha
 	pMsg->clear = clear;
 	pMsg->setComplete = setComplete;
 	pMsg->setStatus = setStatus;
-}
-
-void deleteCatMessage(CatMessage * pMsg)
-{
-	void * pBuf = pMsg->clear(pMsg);
-	free(pBuf);
-}
-
-int isCatMessageComplete(CatMessage* message)
-{
-	CatMessageInner * pInner = getInnerMsg(message);
-	return pInner->m_completeFlag;
-}
-
-unsigned long long getCatMessageTimeStamp(CatMessage* message)
-{
-	CatMessageInner * pInner = getInnerMsg(message);
-	return pInner->m_timeStamp;
 }
 

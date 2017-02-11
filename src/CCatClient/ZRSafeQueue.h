@@ -37,7 +37,7 @@ void clearZRSafeQueue(ZRSafeQueue * pQueue);
 void destroyZRSafeQueue(ZRSafeQueue * pQueue);
 
 // 下面这些加锁也没啥用，干脆不加
-inline int getZRSafeQueueSize(ZRSafeQueue * pQueue)
+inline size_t getZRSafeQueueSize(ZRSafeQueue * pQueue)
 {
 	return getZRStaticQueueSize(pQueue->queue);
 }

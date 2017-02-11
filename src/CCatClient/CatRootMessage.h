@@ -9,10 +9,6 @@
 typedef struct _CatRootMessage
 {
     CatMessage * m_rootMsg;
-    sds m_domain;
-    sds m_hostName;
-    sds m_ipAddress;
-    sds m_message;
     sds m_messageId;
     sds m_parentMessageId;
     sds m_rootMessageId;
@@ -22,6 +18,10 @@ typedef struct _CatRootMessage
     sds m_threadName;
 }CatRootMessage;
 
+CatRootMessage * createCatRootMessage();
 CatRootMessage * copyCatRootMessage(CatRootMessage * pRootMsg);
+
+void clearCatRootMessage(CatRootMessage * pRootMsg);
+void deleteCatRootMessage(CatRootMessage * pRootMsg);
 
 #endif//CATROOTMESSAGE_h__
