@@ -1,9 +1,29 @@
 #ifndef CATCLIENTCOMMON_H
 #define CATCLIENTCOMMON_H
 
+
+#ifdef WIN32
+
+#ifdef  CCATCLIENT_EXPORTS
+#define  CATCLIENT_EXPORT __declspec(dllexport)
+#else
+#define  CATCLIENT_EXPORT __declspec(dllimport)
+#endif
+
+#else
+
+#define CATCLIENT_EXPORT
+
+#endif
+
 #ifdef WIN32
 #define inline __inline
 #endif
+
+
+#define CAT_SUCCESS "SUCCESS"
+#define CAT_ERROR "ERROR"
+#define CAT_FAIL "FAIL"
 
 // 检查申请出来的内存，如果申请出来的为NULL，则代表当前程序内存已满
 // 目前先简单实现，只是打印，然后退出

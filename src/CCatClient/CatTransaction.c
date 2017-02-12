@@ -27,7 +27,9 @@ static void * clear(CatMessage* message)
 	for (size_t i = 0; i < getZRStaticQueueSize(pInner->m_children); ++i)
 	{
 		CatMessage * pMessage = getZRStaticQueueByIndex(pInner->m_children, i);
+        deleteCatMessage(pMessage);
 	}
+    clearZRStaticQueue(pInner->m_children);
 	return pInner;
 }
 
@@ -64,7 +66,7 @@ CatTransaction * createCatTransaction(const char *type, const char * name)
 	{
 		return NULL;
 	}
-	CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransaction)));
+	CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransactionInner)));
 	initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
 	pTransInner->m_children = createZRStaticQueue(g_config.maxChildSize);
 	// …Ë÷√

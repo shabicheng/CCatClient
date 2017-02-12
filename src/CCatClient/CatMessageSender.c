@@ -5,6 +5,7 @@
 #include "CLog.h"
 #include "TimeUtility.h"
 #include "anet.h"
+#include "CatServerConnManager.h"
 
 static ZRSafeQueue * g_cat_bufferQueue = NULL;
 static volatile int g_cat_senderStop = 0;
@@ -22,6 +23,9 @@ volatile unsigned short g_cat_send_port = 0;
 
 int isCatSenderEnable()
 {
+    // @debug
+    return 1;
+    // @debug end
     return g_cat_send_fd > 0;
 }
 
@@ -43,6 +47,7 @@ int sendCatMessageBufferDirectly(sds sendBuf)
     if (anetWrite(g_cat_send_fd, sendBuf, sdslen(sendBuf)) < 0)
     {
         INNER_LOG(CLOG_WARNING, "向服务器ip: %s 发送信息失败, 开始尝试恢复连接.", g_cat_send_ip);
+        recoverCatServerConn();
     }
     return 1;
 }
@@ -91,7 +96,7 @@ static void* catMessageSenderFun(void* para)
 
 void initCatSenderThread()
 {
-    g_cat_mergeBuf = sdsnewlen(NULL, 2 * 1024 * 1024);
+    g_cat_mergeBuf = sdsnewEmpty(2 * 1024 * 1024);
     g_cat_bufferQueue = createZRSafeQueue(g_config.messageQueueSize);
     catChecktPtr(g_cat_bufferQueue);
     g_cat_senderStop = 0;

@@ -49,16 +49,17 @@ struct sdshdr {
 };
 
 static inline size_t sdslen(const sds s) {
-    struct sdshdr *sh = (void*)(s-(sizeof(struct sdshdr)));
+    struct sdshdr *sh = (struct sdshdr *)(s-(sizeof(struct sdshdr)));
     return sh->len;
 }
 
 static inline size_t sdsavail(const sds s) {
-    struct sdshdr *sh = (void*)(s-(sizeof(struct sdshdr)));
+    struct sdshdr *sh = (struct sdshdr *)(s-(sizeof(struct sdshdr)));
     return sh->free;
 }
 
 sds sdsnewlen(const void *init, size_t initlen);
+sds sdsnewEmpty(size_t preAlloclen);
 sds sdsnew(const char *init);
 sds sdsempty(void);
 size_t sdslen(const sds s);

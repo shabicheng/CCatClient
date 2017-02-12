@@ -56,6 +56,7 @@ int popFrontManyZRSafeQueue(ZRSafeQueue * pQueue, void * pQueueArray[], int maxG
 
 typedef ZRSafeQueue ZRSafeStack;
 
+#define createZRSafeStack createZRSafeQueue
 #define pushZRSafeStack pushFrontZRSafeQueue
 #define popZRSafeStack popFrontZRSafeQueue
 #define pryZRSafeStack pryBackZRSafeQueue
@@ -68,6 +69,7 @@ typedef ZRSafeQueue ZRSafeStack;
 
 typedef ZRSafeQueue ZRSafeFIFOQueue;
 
+#define createZRSafeFIFOQueue createZRSafeQueue
 #define inZRSafeFIFOQueue pushBackZRSafeQueue
 #define outZRSafeFIFOQueue popFrontZRSafeQueue
 #define pryZRSafeFIFOQueue pryFrontZRSafeQueue

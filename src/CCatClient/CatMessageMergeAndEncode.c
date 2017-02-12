@@ -46,7 +46,7 @@ static int isAtomicMessage(CatRootMessage * pRootMsg)
 
 void encodeAndSendBuffer(CatRootMessage * pRootMsg)
 {
-
+    sdsclear(g_cat_encodeBuf);
     g_cat_encodeBuf = catEncodeMessage(pRootMsg, g_cat_encodeBuf);
     sendCatMessageBuffer(g_cat_encodeBuf);
 
@@ -74,10 +74,14 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 if (g_cat_mergeMessage->m_rootMsg == NULL)
                 {
                     pTrans = createCatTransaction("_CatMergeTree", "_CatMergeTree");
+                    catChecktPtr(pTrans);
                     g_cat_mergeMessage->m_rootMsg = (CatMessage *)pTrans;
-                 
+                    g_cat_mergeMessage->m_messageId = getNextMessageId();
                     pTrans->setStatus((CatMessage *)pTrans, CAT_SUCCESS);
-                    pTrans->setComplete((CatMessage *)pTrans);
+                    // 这边的Complete只是设置complete标志位
+                    CatMessageInner * msgInner = getInnerMsg(pTrans);
+                    msgInner->setCompleteFlag((CatMessage *)pTrans, 1);
+                    //pTrans->setComplete((CatMessage *)pTrans);
                     setCatMessageTimeStamp((CatMessage *)pTrans, getCatMessageTimeStamp(pAtomicMsg));
                 }
                 else
@@ -117,16 +121,17 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 encodeAndSendBuffer(pRootQueueMsg);
             }
 
-            if (!mergeFlushFlag && g_cat_mergeMessage->m_rootMsg != NULL)
-            {
-                // 检查是否需要强制发送，默认10秒强制刷新一次
-                if (GetTime64() - getCatMessageTimeStamp(g_cat_mergeMessage->m_rootMsg) > 10 * 1000)
-                {
-                    mergeFlushFlag = 1;
+        }
 
-                    encodeAndSendBuffer(g_cat_mergeMessage);
-                    g_cat_mergeMessage->m_rootMsg = NULL;
-                }
+        if (!mergeFlushFlag && g_cat_mergeMessage->m_rootMsg != NULL)
+        {
+            // 检查是否需要强制发送，默认10秒强制刷新一次
+            if (GetTime64() - getCatMessageTimeStamp(g_cat_mergeMessage->m_rootMsg) > 10 * 1000)
+            {
+                mergeFlushFlag = 1;
+
+                encodeAndSendBuffer(g_cat_mergeMessage);
+                g_cat_mergeMessage->m_rootMsg = NULL;
             }
         }
     }
@@ -155,7 +160,7 @@ void initCatMergeAndEncodeThread()
     g_cat_mergeCount = 0;
     g_cat_mergeStop = 0;
     // 默认开4M的缓冲区
-    g_cat_encodeBuf = sdsnewlen(NULL, 4 * 1024 * 1024);
+    g_cat_encodeBuf = sdsnewEmpty(4 * 1024 * 1024);
 #ifdef WIN32
     g_cat_mergeAndEncodeHandle = _beginthreadex(NULL,
         0,

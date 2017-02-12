@@ -37,6 +37,7 @@ int pushBackZRStaticQueue(ZRStaticQueue * pQueue, void * pData)
         pQueue->head = 0;
     }
     pQueue->valueArray[pQueue->head] = pData;
+    ++pQueue->size;
 
     return ZRSTATICQUEUE_OK;
 }
@@ -64,6 +65,7 @@ int pushFrontZRStaticQueue(ZRStaticQueue * pQueue, void * pData)
     }
     pQueue->valueArray[pQueue->tail] = pData;
 
+    ++pQueue->size;
     return ZRSTATICQUEUE_OK;
 }
 
@@ -81,6 +83,7 @@ void * popBackZRStaticQueue(ZRStaticQueue * pQueue)
         pQueue->tail = 0;
         pQueue->head = 0;
         pQueue->size = 0;
+        return pData;
     }
     else
     {
@@ -90,6 +93,7 @@ void * popBackZRStaticQueue(ZRStaticQueue * pQueue)
         }
     }
 
+    --pQueue->size;
     return pData;
 }
 
@@ -106,6 +110,7 @@ void * popFrontZRStaticQueue(ZRStaticQueue * pQueue)
         pQueue->tail = 0;
         pQueue->head = 0;
         pQueue->size = 0;
+        return pData;
     }
     else
     {
@@ -115,6 +120,7 @@ void * popFrontZRStaticQueue(ZRStaticQueue * pQueue)
         }
     }
 
+    --pQueue->size;
     return pData;
 }
 

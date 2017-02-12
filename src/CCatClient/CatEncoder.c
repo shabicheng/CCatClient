@@ -62,7 +62,7 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
     {
         unsigned long long durationMs = getCatTranscationDurationUs((CatTransaction *)pMsg) / 1000;
 
-        tmpBuf = sdscatprintf(tmpBuf, "%ll", getCatMessageTimeStamp(pMsg) + durationMs);
+        tmpBuf = sdscatprintf(tmpBuf, "%lld", getCatMessageTimeStamp(pMsg) + durationMs);
     }
     else 
     {
@@ -84,7 +84,7 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
         if (policy == POLICY_WITH_DURATION && isCatTransaction(pMsg))
         {
             unsigned long long durationUs = getCatTranscationDurationUs((CatTransaction *)pMsg);
-            tmpBuf = sdscatprintf(tmpBuf, "%llus\t", durationUs);
+            tmpBuf = sdscatprintf(tmpBuf, "%lldus\t", durationUs);
         }
 
         tmpBuf = sdscat(tmpBuf, pMsgInner->m_data);

@@ -24,18 +24,25 @@ extern char g_cat_send_ip[64];
 extern unsigned short g_cat_send_port;
 extern int g_cat_send_fd;
 
-static void tryConnBestServer()
+static int tryConnBestServer()
 {
     int newFd = -1;
     int oldFd = -1;
     // @todo for wyp 目前策略就是简单的去连第一个服务器
     if (g_server_activeId == 0)
     {
-        return;
+        return 1;
+    }
+    int ipValidNum = g_server_activeId;
+    // 如果当前失效，则从所有服务器列表中找到一个可用服务器
+    if (ipValidNum < 0)
+    {
+        ipValidNum = g_server_count;
     }
 
-    for (int i = 0; i < g_server_activeId; ++i)
+    for (int i = 0; i < ipValidNum; ++i)
     {
+        // @todo ,这边默认先设置成阻塞
         newFd = anetTcpConnect(NULL, g_server_ips[i], g_server_ports[i]);
         if (newFd > 0)
         {
@@ -47,9 +54,10 @@ static void tryConnBestServer()
             {
                 anetClose(oldFd);
             }
-            break;
+            return 1;
         }
     }
+    return 0;
 
 }
 
@@ -141,10 +149,13 @@ static int resolveServerIps()
 
 static int getRouterFromServer(char * hostName, unsigned short port, char * domain)
 {
+    // @debug
+    return 0;
+    // @debug end
     int sockfd = -1;
     if (g_server_requestBuf == NULL)
     {
-        g_server_requestBuf = sdsnewlen(NULL, 1024);
+        g_server_requestBuf = sdsnewEmpty(1024);
         catChecktPtr(g_server_requestBuf);
     }
     char destIP[128];
@@ -155,11 +166,19 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     sockfd = anetTcpConnect(NULL, destIP, port);
     if (sockfd < 0)
     {
-        INNER_LOG(CLOG_WARNING, "向服务器 %s %d发起连接失败.", destIP, 80);
+        INNER_LOG(CLOG_WARNING, "向服务器 %s %d发起连接失败.", destIP, port);
         return 0;
     }
     sdsclear(g_server_requestBuf);
-    g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Get http://%s/cat/s/router?domain=%s HTTP/1.0\r\n", hostName, domain);
+    if (port == 80)
+    {
+
+        g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Get http://%s/cat/s/router?domain=%s HTTP/1.0\r\n", hostName, domain);
+    }
+    else
+    {
+        g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Get http://%s:%d/cat/s/router?domain=%s HTTP/1.0\r\n", hostName, (int)port, domain);
+    }
     g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Host %s\r\n", hostName);
     g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Connection: close\r\n\r\n");
     int status = anetWrite(sockfd, g_server_requestBuf, sdslen(g_server_requestBuf));
@@ -190,7 +209,7 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     anetClose(sockfd);
     if (g_server_responseBody == NULL)
     {
-        g_server_responseBody = sdsnewlen(NULL, 1024);
+        g_server_responseBody = sdsnewEmpty(1024);
         catChecktPtr(g_server_responseBody);
     }
     sdscpy(g_server_responseBody, body);
@@ -203,23 +222,38 @@ int recoverCatServerConn()
     anetClose(g_cat_send_fd);
     g_cat_send_fd = -1;
     g_server_activeId = -1;
-    tryConnBestServer();
+    if (!tryConnBestServer())
+    {
+        INNER_LOG(CLOG_WARNING, "直接恢复与服务器连接失败, 尝试更新路由.");
+        if (!updateCatServerConn())
+        {
+            INNER_LOG(CLOG_ERROR, "再次尝试失败，服务器当前不可用.");
+            return 0;
+        }
+    }
     return 1;
 }
 
 int initCatServerConnManager()
 {
-#ifdef WIN32
-    WSADATA  Ws; 
-    if (WSAStartup(MAKEWORD(2, 2), &Ws) != 0)
-    {
-        return -1;
-    }
-#endif
     g_server_lock = ZRCreateCriticalSection();
 
-
-
+    // 先从配置那边读过来初始的服务器配置，这样即使在router服务器不可用的情况下也可以连接server
+    g_server_count = g_config.serverNum;
+    if (g_server_count > 64)
+    {
+        g_server_count = 64;
+    }
+    int i = 0;
+    int validCount = 0;
+    for (; i < g_server_count; ++i)
+    {
+        if (resolveIpPortStr(g_config.serverAddresses[i], g_server_ips + validCount, g_server_ports + validCount))
+        {
+            ++validCount;
+        }
+    }
+    g_server_count = validCount;
 
     return updateCatServerConn();
 }
@@ -242,7 +276,14 @@ int updateCatServerConn()
     if (rst > 0)
     {
         updateCatActiveConnIndex();
-        tryConnBestServer();
+        if (tryConnBestServer() == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
-    return 1;
+    return 0;
 }

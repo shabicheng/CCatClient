@@ -38,6 +38,7 @@ void catMessageManagerEndTrans(CatTransaction * trans);
 void catMessageManagerFlush(CatRootMessage * rootMsg);
 
 void catMessageManagerInitialize(const char * domain, const char * hostName);
+void catMessageManagerDestroy();
 
 void catMessageManagerStartTrans(CatTransaction * trans);
 

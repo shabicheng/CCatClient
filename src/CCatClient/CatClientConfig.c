@@ -12,6 +12,8 @@ extern unsigned char g_log_permissionOpt;
 void initCatClientConfig()
 {
     memset(&g_config, 0, sizeof(g_config));
+    g_config.domain = sdsnew("CCatClient");
+    g_config.host = sdsnew("192.168.110.159");
     g_config.serverNum = 3;;
     g_config.serverAddresses = (sds *)malloc(g_config.serverNum * sizeof(sds));
     g_config.serverAddresses[0] = sdsnew("192.168.110.159");

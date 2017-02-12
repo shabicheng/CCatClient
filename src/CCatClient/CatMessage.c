@@ -12,8 +12,8 @@ static void addDataPair(CatMessage* message, const char *data)
 	}
 	else
 	{
-		sdscat(pInner->m_data, "&");
-		sdscat(pInner->m_data, data);
+        pInner->m_data = sdscat(pInner->m_data, "&");
+        pInner->m_data = sdscat(pInner->m_data, data);
 	}
 }
 
@@ -23,15 +23,15 @@ static void addData(CatMessage* message, const char *dataKey, const char * dataV
 	if (pInner->m_data == NULL)
 	{
 		pInner->m_data = sdsnew(dataKey);
-		sdscat(pInner->m_data, "=");
-		sdscat(pInner->m_data, dataValue);
+        pInner->m_data = sdscat(pInner->m_data, "=");
+        pInner->m_data = sdscat(pInner->m_data, dataValue);
 	}
 	else
 	{
-		sdscat(pInner->m_data, "&");
-		sdscat(pInner->m_data, dataKey);
-		sdscat(pInner->m_data, "=");
-		sdscat(pInner->m_data, dataValue);
+        pInner->m_data = sdscat(pInner->m_data, "&");
+        pInner->m_data = sdscat(pInner->m_data, dataKey);
+        pInner->m_data = sdscat(pInner->m_data, "=");
+        pInner->m_data = sdscat(pInner->m_data, dataValue);
 	}
 }
 
@@ -85,7 +85,7 @@ static void * clear(CatMessage* message)
 void initCatMessage(CatMessage * pMsg, char msgType, const char *type, const char * name)
 {
 	CatMessageInner * pInner = getInnerMsg(pMsg);
-	memset(pMsg, 0, sizeof(CatMessage) + sizeof(CatMessageInner));
+	memset(pInner, 0, sizeof(CatMessage) + sizeof(CatMessageInner));
 	pInner->m_msgType = msgType;
 	pInner->m_timeStampMs = GetTime64();
 	pInner->m_type = sdsnew(type);

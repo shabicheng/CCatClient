@@ -19,14 +19,14 @@ static void save() {
     {
         return;
     }
-    fprintf(file, "%ll %d", g_last_hour, g_next_start);
+    fprintf(file, "%lld %d", g_last_hour, g_next_start);
     fclose(file);
 }
 
 static void load() {
     FILE *file = fopen(g_index_filePath, "r");
     if (file == NULL) return;
-    fscanf(file, "%ll %d", &g_last_hour, &g_next_start);
+    fscanf(file, "%lld %d", &g_last_hour, &g_next_start);
     fclose(file);
 }
 
@@ -52,8 +52,8 @@ void initMessageIdHelper()
 
     }
     // 在初始化的时候就创建出来
-    g_id_prefix = sdsnewlen(NULL, 64);
-    g_id_prefix = sdscatprintf(g_id_prefix, "%s-%s-%ll-", g_cat_messageManager.m_domain, g_cat_messageManager.m_ipX, g_last_hour);
+    g_id_prefix = sdsnewEmpty(64);
+    g_id_prefix = sdscatprintf(g_id_prefix, "%s-%s-%lld-", g_cat_messageManager.m_domain, g_cat_messageManager.m_ipX, g_last_hour);
 
 }
 
@@ -78,7 +78,7 @@ sds getNextMessageId()
         g_next_start = 10000;
         g_id_index = 0;
         saveFlag = 1;
-        g_id_prefix = sdscatprintf(g_id_prefix, "%s-%s-%ll-", g_cat_messageManager.m_domain, g_cat_messageManager.m_ipX, g_last_hour);
+        g_id_prefix = sdscatprintf(g_id_prefix, "%s-%s-%lld-", g_cat_messageManager.m_domain, g_cat_messageManager.m_ipX, g_last_hour);
     }
 
     ++g_id_index;
@@ -94,8 +94,8 @@ sds getNextMessageId()
     {
         save();
     }
-    sds msgIdStr = sdsnewlen(NULL, 128);
-    return sdscatprintf(msgIdStr, "%s%d", g_id_index);
+    sds msgIdStr = sdsnewEmpty(128);
+    return sdscatprintf(msgIdStr, "%s%d", g_id_prefix, g_id_index);
 }
 
 void reuseMessageId(sds msgId)

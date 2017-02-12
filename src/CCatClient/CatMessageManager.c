@@ -46,14 +46,32 @@ void catMessageManagerFlush(CatRootMessage * rootMsg)
 void catMessageManagerInitialize(const char * domain, const char * hostName)
 {
     g_cat_messageManager.m_domain = sdsnew(domain);
+    catChecktPtr(g_cat_messageManager.m_domain);
+
     g_cat_messageManager.m_hostname = sdsnew(hostName);
+    catChecktPtr(g_cat_messageManager.m_hostname);
     // @todo for wyp
     // ip地址好像是16进制的?
-    g_cat_messageManager.m_ip = sdsnewlen(NULL, 64);
+    g_cat_messageManager.m_ip = sdsnewEmpty(64);
+    catChecktPtr(g_cat_messageManager.m_ip);
     anetResolveIP(NULL, NULL, g_cat_messageManager.m_ip, 64);
-    g_cat_messageManager.m_ipX = sdsnewlen(NULL, 64);
+
+    g_cat_messageManager.m_ipX = sdsnewEmpty(64);
+    catChecktPtr(g_cat_messageManager.m_ipX);
     anetResolveIPHex(NULL, NULL, g_cat_messageManager.m_ipX, 64);
 
+}
+
+void catMessageManagerDestroy()
+{
+    sdsfree(g_cat_messageManager.m_domain);
+    g_cat_messageManager.m_domain = NULL;
+    sdsfree(g_cat_messageManager.m_hostname);
+    g_cat_messageManager.m_hostname = NULL;
+    sdsfree(g_cat_messageManager.m_ip);
+    g_cat_messageManager.m_ip = NULL;
+    sdsfree(g_cat_messageManager.m_ipX);
+    g_cat_messageManager.m_ipX = NULL;
 }
 
 void catMessageManagerStartTrans(CatTransaction * trans)

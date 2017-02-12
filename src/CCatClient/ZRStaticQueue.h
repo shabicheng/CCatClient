@@ -43,7 +43,7 @@ inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
 
 inline int isZRStaticQueueEmpty(ZRStaticQueue * pQueue)
 {
-    return pQueue->size;
+    return !pQueue->size;
 }
 
 inline int isZRStaticQueueFull(ZRStaticQueue * pQueue)
@@ -58,6 +58,7 @@ inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
 
 typedef ZRStaticQueue ZRStaticStack;
 
+#define createZRStaticStack createZRStaticQueue
 #define pushZRStaticStack pushFrontZRStaticQueue
 #define popZRStaticStack popFrontZRStaticQueue
 #define pryZRStaticStack pryFrontZRStaticQueue
@@ -70,6 +71,7 @@ typedef ZRStaticQueue ZRStaticStack;
 
 typedef ZRStaticQueue ZRStaticFIFOQueue;
 
+#define createZRStaticFIFOQueue createZRStaticQueue
 #define inZRStaticFIFOQueue pushBackZRStaticQueue
 #define outZRStaticFIFOQueue popFrontZRStaticQueue
 #define pryZRStaticFIFOQueue pryFrontZRStaticQueue

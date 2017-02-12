@@ -15,15 +15,19 @@ CatContext * getCatContext()
     if (g_cat_context == NULL)
     {
         g_cat_context = (CatContext *)malloc(sizeof(CatContext));
+        catChecktPtr(g_cat_context);
         g_cat_context->m_elementSize = 0;
         g_cat_context->m_rootMsg = createCatRootMessage();
-
+        catChecktPtr(g_cat_context->m_rootMsg);
+        g_cat_context->m_transStack = createZRStaticStack(g_config.maxContextElementSize);
+        catChecktPtr(g_cat_context->m_transStack);
         g_cat_context->m_rootMsg->m_rootMsg = NULL;
 
         // @todo 
         g_cat_context->m_rootMsg->m_threadId = sdsnew("0");
         g_cat_context->m_rootMsg->m_threadGroupName = sdsnew("UnknownGroup");
         g_cat_context->m_rootMsg->m_threadName = sdsnew("UnknownThread");
+        catChecktPtr(g_cat_context->m_rootMsg->m_threadName);
 
 
     }
@@ -123,6 +127,7 @@ void catContextStartTrans(CatTransaction * trans)
 
 int catContextEndTrans(CatTransaction * trans)
 {
+    getCatContext();
     size_t i, j;
     size_t initStackSize = getZRStaticStackSize(g_cat_context->m_transStack);
     // 只需要查找到该trans就可以
@@ -138,7 +143,7 @@ int catContextEndTrans(CatTransaction * trans)
     if (i != initStackSize)
     {
         // 如果找到再真正的pop
-        for (j = 0; j < i; ++i)
+        for (j = 0; j <= i; ++j)
         {
             popZRStaticStack(g_cat_context->m_transStack);
         }

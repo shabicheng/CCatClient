@@ -64,6 +64,21 @@ sds sdsnewlen(const void *init, size_t initlen) {
     return (char*)sh->buf;
 }
 
+
+sds sdsnewEmpty(size_t preAlloclen)
+{
+    struct sdshdr *sh;
+
+    sh = malloc(sizeof(struct sdshdr) + preAlloclen + 1);
+    if (sh == NULL) return NULL;
+    sh->len = 0;
+    sh->free = preAlloclen;
+    sh->buf[0] = '\0';
+    return (char*)sh->buf;
+}
+
+
+
 /* Create an empty (zero length) sds string. Even in this case the string
  * always has an implicit null term. */
 sds sdsempty(void) {
@@ -78,6 +93,7 @@ sds sdsnew(const char *init) {
 
 /* Duplicate an sds string. */
 sds sdsdup(const sds s) {
+    if (s == NULL) return NULL;
     return sdsnewlen(s, sdslen(s));
 }
 
@@ -259,7 +275,9 @@ sds sdscatchar(sds s, char c)
     if (s == NULL) return NULL;
     sh = (void*)(s - (sizeof(struct sdshdr)));
     s[curlen] = c;
-    s[curlen + 1] = c;
+    s[curlen + 1] = '\0';
+    ++sh->len;
+    --sh->free;
     return s;
 }
 
@@ -270,6 +288,10 @@ sds sdscatchar(sds s, char c)
  * After the call, the passed sds string is no longer valid and all the
  * references must be substituted with the new pointer returned by the call. */
 sds sdscat(sds s, const char *t) {
+    if (s == NULL || t == NULL)
+    {
+        return s;
+    }
     return sdscatlen(s, t, strlen(t));
 }
 

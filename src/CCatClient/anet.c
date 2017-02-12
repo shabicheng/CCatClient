@@ -248,11 +248,11 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
 {
     // 没填入host为获取本机地址
     char hostname[255];
-    if (ipbuf == NULL)
+    if (host == NULL)
     {
         if (gethostname(hostname, sizeof(hostname)) == 0)
         {
-            ipbuf = hostname;
+            host = hostname;
         }
         else
         {

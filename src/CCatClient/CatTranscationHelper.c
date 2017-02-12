@@ -5,6 +5,7 @@
 #include "CatMessigeIdHelper.h"
 #include "sds.h"
 #include "CatMessageManager.h"
+#include "CatClientCommon.h"
 
 
 static void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransaction * target, size_t level)
@@ -114,11 +115,13 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 void markAsNotCompleted(CatTransaction * pTrans)
 {
 	CatEvent * event = createCatEvent("cat", "BadInstrument");
-
+    catChecktPtr(event);
+    CatMessageInner * eventInner = getInnerMsg(event);
 	event->setStatus(event, "TransactionNotCompleted");
-	event->setComplete(event);
-	pTrans->addChild(pTrans, event);
-	pTrans->setComplete((CatMessage *)pTrans);
+    eventInner->m_completeFlag = 1;
+    pTrans->addChild(pTrans, event);
+    CatTransactionInner * transInner = getInnerTrans(pTrans);
+    transInner->m_completeFlag = 1;
 }
 
 void validateTransaction(CatTransaction * pParentTrans, CatTransaction * pTrans)
