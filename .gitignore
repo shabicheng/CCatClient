@@ -1,3 +1,5 @@
+
+
 # Object files
 *.o
 *.ko
@@ -35,9 +37,20 @@
 
 .vs
 
-Debug
-Release
+# !Debug
+# !Release
 *.db
 *.opendb
 *.sdf
 *.suo
+
+*.tlog
+*.exp
+*.innerLog
+*.index
+*.idb
+*.pdb
+*.log
+*.ilk
+
+!gtest*.lib
