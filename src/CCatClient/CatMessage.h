@@ -19,15 +19,15 @@ typedef struct _CatMessage CatMessage;
 typedef struct _CatMessageInner
 {
 	char m_msgType;
-	char m_unused[3]; //4字节对齐
+	char m_unused[3]; //4脳脰陆脷露脭脝毛
 	sds m_type;
 	sds m_name;
 	sds m_status;
 	sds m_data;
-	unsigned long long m_timeStampMs; //统一含义，sec*1000 + ms
+	unsigned long long m_timeStampMs; //脥鲁脪禄潞卢脪氓拢卢sec*1000 + ms
 	int m_completeFlag;
 	void(*setCompleteFlag)  (CatMessage* message, int completeFlag);
-	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
+	void *(*clear)   (CatMessage* message); // 脳垄脪芒 clear路碌禄脴脰碌脢脟malloc碌脛脢脳碌脴脰路
 
 
 }CatMessageInner;
@@ -39,7 +39,7 @@ struct _CatMessage
 	void(*addData)   (CatMessage* message, const char *dataKey, const char * dataValue);
 	void(*setStatus) (CatMessage* message, const char *status);
 	void(*setComplete)  (CatMessage* message);
-	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
+	void *(*clear)   (CatMessage* message); // 脳垄脪芒 clear路碌禄脴脰碌脢脟malloc碌脛脢脳碌脴脰路
 };
 
 
@@ -53,39 +53,39 @@ struct _CatMessage
  *
  * @param [in,out]	pMsg	If non-null, the message.
  **************************************************************************************************/
-inline void deleteCatMessage(CatMessage * pMsg)
+static inline void deleteCatMessage(CatMessage * pMsg)
 {
     void * pBuf = pMsg->clear(pMsg);
     free(pBuf);
 }
 
-inline int isCatMessageComplete(CatMessage* message)
+static inline int isCatMessageComplete(CatMessage* message)
 {
     CatMessageInner * pInner = getInnerMsg(message);
     return pInner->m_completeFlag;
 }
 
-inline unsigned long long getCatMessageTimeStamp(CatMessage* message)
+static inline unsigned long long getCatMessageTimeStamp(CatMessage* message)
 {
     CatMessageInner * pInner = getInnerMsg(message);
     return pInner->m_timeStampMs;
 }
 
-inline void setCatMessageTimeStamp(CatMessage* message, unsigned long long timeMs)
+static inline void setCatMessageTimeStamp(CatMessage* message, unsigned long long timeMs)
 {
     CatMessageInner * pInner = getInnerMsg(message);
     pInner->m_timeStampMs = timeMs;
 }
 
 
-inline sds getCatMessageType(CatMessage* message)
+static inline sds getCatMessageType(CatMessage* message)
 {
     CatMessageInner * pInner = getInnerMsg(message);
     return pInner->m_type;
 }
 
 /**********************************************************************************************//**
- * msg没有create方法，只有初始化方法，且只能被其他子类调用.
+ * msg脙禄脫脨create路陆路篓拢卢脰禄脫脨鲁玫脢录禄炉路陆路篓拢卢脟脪脰禄脛脺卤禄脝盲脣没脳脫脌脿碌梅脫脙.
  *
  * @author	ZRZC
  * @date	2017/2/10

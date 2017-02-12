@@ -11,6 +11,8 @@
 #include "CatMessageSender.h"
 #include "CatTranscationHelper.h"
 
+static unsigned long long g_cat_msgQueFullCount = 0;
+
 
 static ZRSafeQueue * g_cat_messageQueue = NULL;
 static CatRootMessage * g_cat_mergeMessage = NULL;
@@ -20,6 +22,7 @@ static volatile int g_cat_mergeStop = 0;
 static sds g_cat_encodeBuf = NULL;
 
 static void * g_cat_mergeAndEncodeHandle = NULL;
+
 
 static int isAtomicMessage(CatRootMessage * pRootMsg)
 {
@@ -66,22 +69,28 @@ static void* catMessageMergeAndEncodeFun(void* para)
         int mergeFlushFlag = 0;
         if (pRootQueueMsg != NULL)
         {
-            // 判断是否需要merge
+
+
+            // 脜脨露脧脢脟路帽脨猫脪陋merge
             if (isAtomicMessage(pRootQueueMsg)) 
             {
                 CatTransaction * pTrans = NULL;
                 CatMessage * pAtomicMsg = pRootQueueMsg->m_rootMsg;
                 if (g_cat_mergeMessage->m_rootMsg == NULL)
                 {
-                    pTrans = createCatTransaction("_CatMergeTree", "_CatMergeTree");
+                    pTrans = createCatTransaction("C_CatMergeTree", "C_CatMergeTree");
                     catChecktPtr(pTrans);
                     g_cat_mergeMessage->m_rootMsg = (CatMessage *)pTrans;
+                    if (g_cat_mergeMessage->m_messageId != NULL)
+                    {
+                        sdsfree(g_cat_mergeMessage->m_messageId);
+                        g_cat_mergeMessage->m_messageId = NULL;
+                    }
                     g_cat_mergeMessage->m_messageId = getNextMessageId();
                     pTrans->setStatus((CatMessage *)pTrans, CAT_SUCCESS);
-                    // 这边的Complete只是设置complete标志位
+                    // 脮芒卤脽碌脛Complete脰禄脢脟脡猫脰脙complete卤锚脰戮脦禄
                     CatMessageInner * msgInner = getInnerMsg(pTrans);
                     msgInner->setCompleteFlag((CatMessage *)pTrans, 1);
-                    //pTrans->setComplete((CatMessage *)pTrans);
                     setCatMessageTimeStamp((CatMessage *)pTrans, getCatMessageTimeStamp(pAtomicMsg));
                 }
                 else
@@ -90,7 +99,9 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 }
 
                 pTrans->addChild(pTrans, pRootQueueMsg->m_rootMsg);
-                
+                // 卤禄脛脙脳脽脰庐潞贸脪陋脰脙脦陋NULL
+                pRootQueueMsg->m_rootMsg = NULL;
+
                 if (isCatTransaction(pAtomicMsg))
                 {
                     setCatTranscationDurationUs(pTrans, getCatMessageTimeStamp(pAtomicMsg) * 1000 - 
@@ -104,13 +115,20 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 }
 
                 reuseMessageId(pRootQueueMsg->m_messageId);
-                
+                // 禄脴脢脮脰庐潞贸脪虏脪陋脰脙脦陋NULL
+                pRootQueueMsg->m_messageId = NULL;
+                deleteCatRootMessage(pRootQueueMsg);
+
+
+
                 if (getZRStaticStackSize(pTrans->getChildren(pTrans)) >= g_config.maxChildSize)
                 {
                     mergeFlushFlag = 1;
 
-                    encodeAndSendBuffer(g_cat_mergeMessage);
-                    g_cat_mergeMessage->m_rootMsg = NULL;
+                    encodeAndSendBuffer(g_cat_mergeMessage); 
+                    // 脡戮鲁媒脰庐潞贸脪陋脰脴脨脗陆篓脕垄
+                    g_cat_mergeMessage = createCatRootMessage();
+                    catChecktPtr(g_cat_mergeMessage);
                 }
 
 
@@ -125,13 +143,15 @@ static void* catMessageMergeAndEncodeFun(void* para)
 
         if (!mergeFlushFlag && g_cat_mergeMessage->m_rootMsg != NULL)
         {
-            // 检查是否需要强制发送，默认10秒强制刷新一次
+            // 录矛虏茅脢脟路帽脨猫脪陋脟驴脰脝路垄脣脥拢卢脛卢脠脧10脙毛脟驴脰脝脣垄脨脗脪禄麓脦
             if (GetTime64() - getCatMessageTimeStamp(g_cat_mergeMessage->m_rootMsg) > 10 * 1000)
             {
                 mergeFlushFlag = 1;
 
                 encodeAndSendBuffer(g_cat_mergeMessage);
-                g_cat_mergeMessage->m_rootMsg = NULL;
+                // 脡戮鲁媒脰庐潞贸脪陋脰脴脨脗陆篓脕垄
+                g_cat_mergeMessage = createCatRootMessage();
+                catChecktPtr(g_cat_mergeMessage);
             }
         }
     }
@@ -141,9 +161,19 @@ static void* catMessageMergeAndEncodeFun(void* para)
 
 int sendRootMessage(CatRootMessage * pRootMsg)
 {
+//     ++g_dbg_inCount;
+//     if (g_dbg_inCount % 10000 == 0)
+//     {
+//         printf("sendRootMessage %lld %lld\n", g_dbg_inCount, g_dbg_outCount);
+//     }
     if (pushBackZRSafeQueue(g_cat_messageQueue, pRootMsg) == ZRSAFEQUEUE_ERR)
     {
-        INNER_LOG(CLOG_WARNING, "当前root message队列已满.");
+        if (g_cat_msgQueFullCount == 0 || g_cat_msgQueFullCount % 1000 == 0)
+        {
+            INNER_LOG(CLOG_WARNING, "碌卤脟掳root message露脫脕脨脪脩脗煤.");
+        }
+        Sleep(1);
+        ++g_cat_msgQueFullCount;
         return 0;
     }
     return 1;
@@ -159,7 +189,7 @@ void initCatMergeAndEncodeThread()
     catChecktPtr(g_cat_mergeMessage);
     g_cat_mergeCount = 0;
     g_cat_mergeStop = 0;
-    // 默认开4M的缓冲区
+    // 脛卢脠脧驴陋4M碌脛禄潞鲁氓脟酶
     g_cat_encodeBuf = sdsnewEmpty(4 * 1024 * 1024);
 #ifdef WIN32
     g_cat_mergeAndEncodeHandle = _beginthreadex(NULL,
@@ -176,12 +206,12 @@ void initCatMergeAndEncodeThread()
 
 void clearCatMergeAndEncodeThread()
 {
-    // 等待线程退出
+    // 碌脠麓媒脧脽鲁脤脥脣鲁枚
     g_cat_mergeStop = 1;
-    // 删除线程
+    // 脡戮鲁媒脧脽鲁脤
 
 #ifdef _WIN32
-    // 如果等待一秒还没有结束，则认为是有问题的，此时强制结束线程
+    // 脠莽鹿没碌脠麓媒脪禄脙毛禄鹿脙禄脫脨陆谩脢酶拢卢脭貌脠脧脦陋脢脟脫脨脦脢脤芒碌脛拢卢麓脣脢卤脟驴脰脝陆谩脢酶脧脽鲁脤
     if (WAIT_OBJECT_0 != WaitForSingleObject(g_cat_mergeAndEncodeHandle, 1000))
     {
         TerminateThread(g_cat_mergeAndEncodeHandle, 0);
@@ -200,10 +230,11 @@ void clearCatMergeAndEncodeThread()
         pthread_cancel(g_cat_mergeAndEncodeHandle);
     }
 #endif // _WIN32
-    // 删除g_cat_messageQueue
+    // 脡戮鲁媒g_cat_messageQueue
     deleteCatRootMessage(g_cat_mergeMessage);
-    // 删除g_cat_mergeMessage
-    for (size_t i = 0; i < getZRSafeQueueSize(g_cat_messageQueue); ++i)
+    // 脡戮鲁媒g_cat_mergeMessage
+	size_t i = 0;
+    for (; i < getZRSafeQueueSize(g_cat_messageQueue); ++i)
     {
         deleteCatMessage((CatMessage *)getZRSafeQueueByIndex(g_cat_messageQueue, i));
     }

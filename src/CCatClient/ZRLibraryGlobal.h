@@ -4,7 +4,7 @@
 #ifndef _ZHENRONG_COMMON_
 #define _ZHENRONG_COMMON_
 
-//以下为引用的操作系统头文件
+//脪脭脧脗脦陋脪媒脫脙碌脛虏脵脳梅脧碌脥鲁脥路脦脛录镁
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,17 +28,14 @@ typedef int socklen_t;
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <cstring>
+#include <string.h>
 #include <pthread.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
 #include <semaphore.h>
-#include <fstream>
 #include <stdarg.h>
 #include <time.h>
-#include <string>
-#include <iomanip>
 #include <ifaddrs.h>
 #include <sys/times.h>
 #include <signal.h>
@@ -98,7 +95,7 @@ typedef int socklen_t;
 
 
 /**********************************************************************************************//**
-* @brief   判断本机是否为大小端.
+* @brief   脜脨露脧卤戮禄煤脢脟路帽脦陋麓贸脨隆露脣.
 *
 * @return	The local little endian.
 **************************************************************************************************/
@@ -133,8 +130,8 @@ typedef long long int64;
 typedef int SOCKET;
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
-#define __in   // 表示该参数用于输入
-#define __out  // 表示该参数用于输出值
+#define __in   // 卤铆脢戮赂脙虏脦脢媒脫脙脫脷脢盲脠毛
+#define __out  // 卤铆脢戮赂脙虏脦脢媒脫脙脫脷脢盲鲁枚脰碌
 #define closesocket close
 #define stricmp strcasecmp
 typedef int BOOL;
@@ -153,23 +150,23 @@ typedef int BOOL;
 
 #define NETEWOULDBLOCK EWOULDBLOCK
 
-// 获取错误号
+// 禄帽脠隆麓铆脦贸潞脜
 
 #define NetGetLastError() (errno)
 #define GetLastError() (errno)
 
 // 
-// // 获取ip地址
-// // 有且仅有则返回127.0.0.1
-// // 返回最后一个不是127.0.0.1的ip
-// // 如果配置ip在地址表,则返回配置ip
+// // 禄帽脠隆ip碌脴脰路
+// // 脫脨脟脪陆枚脫脨脭貌路碌禄脴127.0.0.1
+// // 路碌禄脴脳卯潞贸脪禄赂枚虏禄脢脟127.0.0.1碌脛ip
+// // 脠莽鹿没脜盲脰脙ip脭脷碌脴脰路卤铆,脭貌路碌禄脴脜盲脰脙ip
 // inline bool NetGetLocalIP(char *ip, const char *configIP = NULL)
 // {
 // 	struct ifaddrs * ifAddrStruct = NULL;
-// 	getifaddrs(&ifAddrStruct); // 获取地址列表
+// 	getifaddrs(&ifAddrStruct); // 禄帽脠隆碌脴脰路脕脨卤铆
 // 
 // 	bool isFind = false, isSave = false;
-// 	strcpy(ip, "127.0.0.1"); // 无网卡
+// 	strcpy(ip, "127.0.0.1"); // 脦脼脥酶驴篓
 // 
 // 	while (ifAddrStruct != NULL)
 // 	{
@@ -177,7 +174,7 @@ typedef int BOOL;
 // 		{
 // 			void *tmpAddrPtr = NULL;
 // 			// is a valid IP4 Address
-// 			if (!strcmp(ifAddrStruct->ifa_name, "lo")) // 是127.0.0.1 继续比对
+// 			if (!strcmp(ifAddrStruct->ifa_name, "lo")) // 脢脟127.0.0.1 录脤脨酶卤脠露脭
 // 			{
 // 				tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
 // 				inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
@@ -189,9 +186,9 @@ typedef int BOOL;
 // 
 // 			tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
 // 			inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
-// 			isFind = true; // 找到了非127.0.0.1的ip
+// 			isFind = true; // 脮脪碌陆脕脣路脟127.0.0.1碌脛ip
 // 
-// 			if (configIP != NULL) // 配置了ip地址则比较
+// 			if (configIP != NULL) // 脜盲脰脙脕脣ip碌脴脰路脭貌卤脠陆脧
 // 			{
 // 				isFind = false;
 // 				while (ifAddrStruct != NULL)
@@ -220,9 +217,9 @@ typedef int BOOL;
 #endif
 
 /**********************************************************************************************//**
-* 为了隐藏接口类的实现而提供的一组宏定义，目的是避免在头文件中暴露过多细节或过多依赖项
-* 本质上是将类的实现放在其Private类中，Private类定义在cpp中
-* 具体使用方法参见ZRLibraryTest中的CommonIncludeTest.h和CommonIncludeTest.cpp
+* 脦陋脕脣脪镁虏脴陆脫驴脷脌脿碌脛脢碌脧脰露酶脤谩鹿漏碌脛脪禄脳茅潞锚露篓脪氓拢卢脛驴碌脛脢脟卤脺脙芒脭脷脥路脦脛录镁脰脨卤漏脗露鹿媒露脿脧赂陆脷禄貌鹿媒露脿脪脌脌碌脧卯
+* 卤戮脰脢脡脧脢脟陆芦脌脿碌脛脢碌脧脰路脜脭脷脝盲Private脌脿脰脨拢卢Private脌脿露篓脪氓脭脷cpp脰脨
+* 戮脽脤氓脢鹿脫脙路陆路篓虏脦录没ZRLibraryTest脰脨碌脛CommonIncludeTest.h潞脥CommonIncludeTest.cpp
 *
 * @author	ZRZC
 * @date	2016/6/2
@@ -254,7 +251,7 @@ typedef int BOOL;
 #define ZR_Q(Class) Class * const q = q_func()
 
 /*
-需注意，一定要放在private声明下
+脨猫脳垄脪芒拢卢脪禄露篓脪陋路脜脭脷private脡霉脙梅脧脗
 Some classes do not permit copies to be made of an object. These
 classes contains a private copy constructor and assignment
 operator to disable copying (the compiler gives an error message).
@@ -267,15 +264,15 @@ operator to disable copying (the compiler gives an error message).
 
 #ifdef WIN32
 #define snprintf sprintf_s
-// WIN32特殊用法WString与普通string的互相转换
-//用完之后delete
+// WIN32脤脴脢芒脫脙路篓WString脫毛脝脮脥篓string碌脛禄楼脧脿脳陋禄禄
+//脫脙脥锚脰庐潞贸delete
 /// *************************************************************************************************
 /// * @fn       CstrToWstr
-/// * @brief    将普通的string转换为多字节字符串，字符串使用new分配出来
+/// * @brief    陆芦脝脮脥篓碌脛string脳陋禄禄脦陋露脿脳脰陆脷脳脰路没麓庐拢卢脳脰路没麓庐脢鹿脫脙new路脰脜盲鲁枚脌麓
 /// * @param    cstr  The CSTR.
 /// * @returns    wchar_t *.
 /// * 
-/// * @details  用户需要手动delete掉返回的指针
+/// * @details  脫脙禄搂脨猫脪陋脢脰露炉delete碌么路碌禄脴碌脛脰赂脮毛
 /// * 
 /// * @todo     
 /// * 
@@ -288,13 +285,13 @@ operator to disable copying (the compiler gives an error message).
 // 	size_t size = cstr.length();
 // 	wchar_t *buffer = new wchar_t[size + 1];
 // 	MultiByteToWideChar(CP_ACP, 0, cstr.c_str(), (int)size, buffer, (int)size * sizeof(wchar_t));
-// 	buffer[size] = 0;  // 确保以 '\0' 结尾
+// 	buffer[size] = 0;  // 脠路卤拢脪脭 '\0' 陆谩脦虏
 // 	return buffer;
 // }
 // 
 // /// *************************************************************************************************
 // /// * @fn       WstrToCstr
-// /// * @brief    将多字节字符串转换为string
+// /// * @brief    陆芦露脿脳脰陆脷脳脰路没麓庐脳陋禄禄脦陋string
 // /// * @param    lpcwszStr  The LPCWSZ string.
 // /// * @returns    string.
 // /// * 

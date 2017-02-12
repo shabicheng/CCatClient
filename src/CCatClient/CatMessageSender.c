@@ -21,19 +21,27 @@ volatile unsigned short g_cat_send_port = 0;
 #define  CAT_MERGEBUF_COUNT 16
 #define  CAT_MERGEBUF_SIZE (60 * 1024)
 
+
+// @debug
+
+//FILE * g_cat_msgSaveFile = NULL;
+
+// @debug end
+
 int isCatSenderEnable()
 {
-    // @debug
-    return 1;
-    // @debug end
+//     // @debug
+//     return 1;
+//     // @debug end
     return g_cat_send_fd > 0;
 }
 
 int sendCatMessageBuffer(sds sendBuf)
 {
-    sds newBuf = sdsdup(sendBuf);
     catChecktPtr(sendBuf);
-    if (pushBackZRSafeQueue(g_cat_bufferQueue, sendBuf) == ZRSAFEQUEUE_OK)
+    sds newBuf = sdsdup(sendBuf);
+    catChecktPtr(newBuf);
+    if (pushBackZRSafeQueue(g_cat_bufferQueue, newBuf) == ZRSAFEQUEUE_OK)
     {
         return 1;
     }
@@ -43,12 +51,31 @@ int sendCatMessageBuffer(sds sendBuf)
 
 int sendCatMessageBufferDirectly(sds sendBuf)
 {
-    // 调用socket直接发送了
+    // @debug
+    //return 1;
+    // 碌梅脫脙socket脰卤陆脫路垄脣脥脕脣
+	
+	
+	//printf("SendBufLen %d\n", sdslen(sendBuf));
+	//printf("SendBufLen %lld\n", sdslen(sendBuf));
+	
     if (anetWrite(g_cat_send_fd, sendBuf, sdslen(sendBuf)) < 0)
     {
-        INNER_LOG(CLOG_WARNING, "向服务器ip: %s 发送信息失败, 开始尝试恢复连接.", g_cat_send_ip);
+        INNER_LOG(CLOG_WARNING, "脧貌路镁脦帽脝梅ip: %s 路垄脣脥脨脜脧垄脢搂掳脺, 驴陋脢录鲁垄脢脭禄脰赂麓脕卢陆脫.", g_cat_send_ip);
         recoverCatServerConn();
     }
+
+    // @debug
+    //if (g_cat_msgSaveFile == NULL)
+    //{
+    //    g_cat_msgSaveFile = fopen("buf.dat", "wb");
+    //}
+
+    //fwrite(sendBuf, sdslen(sendBuf), 1, g_cat_msgSaveFile);
+
+   //fwrite("$$$$", 4, 1, g_cat_msgSaveFile);
+   //fflush(g_cat_msgSaveFile);
+    // @debug end
     return 1;
 }
 
@@ -63,23 +90,25 @@ static void* catMessageSenderFun(void* para)
     while (!g_cat_senderStop)
     {
         int eleNum = popFrontManyZRSafeQueue(g_cat_bufferQueue, sendBufArray, 16, 100);
-        // 这边其实可以合包来发，实现策略是获取一系列的
+        // 脮芒卤脽脝盲脢碌驴脡脪脭潞脧掳眉脌麓路垄拢卢脢碌脧脰虏脽脗脭脢脟禄帽脠隆脪禄脧碌脕脨碌脛
         if (eleNum > 0)
         {
             if (eleNum > 1)
             {
-                g_cat_mergeBuf = sdscpylen(g_cat_mergeBuf, sendBufArray[0], sdslen(sendBufArray[0]));
-                int nowEle = 1;
+                sdsclear(g_cat_mergeBuf);
+                int nowEle = 0;
                 while (nowEle < eleNum)
                 {
                     while (nowEle < eleNum && sdslen(g_cat_mergeBuf) < CAT_MERGEBUF_SIZE)
                     {
-                        // 内部拼接
-                        g_cat_mergeBuf = sdscat(g_cat_mergeBuf, sendBufArray[nowEle++]);
-                        sdsfree(sendBufArray[nowEle++]);
+                        // 脛脷虏驴脝麓陆脫
+                        g_cat_mergeBuf = sdscat(g_cat_mergeBuf, sendBufArray[nowEle]);
+                        sdsfree(sendBufArray[nowEle]);
+                        ++nowEle;
                     }
-                    // 拼接完了发送出去，这个buf不需要释放
+                    // 脝麓陆脫脥锚脕脣路垄脣脥鲁枚脠楼拢卢脮芒赂枚buf虏禄脨猫脪陋脢脥路脜
                     sendCatMessageBufferDirectly(g_cat_mergeBuf);
+                    sdsclear(g_cat_mergeBuf);
                 }
 
             }
@@ -115,12 +144,12 @@ void initCatSenderThread()
 
 void clearCatSenderThread()
 {
-    // 等待线程退出
+    // 碌脠麓媒脧脽鲁脤脥脣鲁枚
     g_cat_senderStop = 1;
-    // 删除线程
+    // 脡戮鲁媒脧脽鲁脤
 
 #ifdef _WIN32
-    // 如果等待一秒还没有结束，则认为是有问题的，此时强制结束线程
+    // 脠莽鹿没碌脠麓媒脪禄脙毛禄鹿脙禄脫脨陆谩脢酶拢卢脭貌脠脧脦陋脢脟脫脨脦脢脤芒碌脛拢卢麓脣脢卤脟驴脰脝陆谩脢酶脧脽鲁脤
     if (WAIT_OBJECT_0 != WaitForSingleObject(g_cat_senderHandle, 1000))
     {
         TerminateThread(g_cat_senderHandle, 0);
@@ -139,8 +168,9 @@ void clearCatSenderThread()
         pthread_cancel(g_cat_senderHandle);
     }
 #endif // _WIN32
-    // 删除g_cat_bufferQueue
-    for (size_t i = 0; i < getZRSafeQueueSize(g_cat_bufferQueue); ++i)
+    // 脡戮鲁媒g_cat_bufferQueue
+	size_t i = 0;
+    for (; i < getZRSafeQueueSize(g_cat_bufferQueue); ++i)
     {
         sdsfree((sds)getZRSafeQueueByIndex(g_cat_bufferQueue, i));
     }

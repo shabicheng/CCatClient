@@ -28,26 +28,28 @@ static int tryConnBestServer()
 {
     int newFd = -1;
     int oldFd = -1;
-    // @todo for wyp 目前策略就是简单的去连第一个服务器
+    // @todo for wyp 脛驴脟掳虏脽脗脭戮脥脢脟录貌碌楼碌脛脠楼脕卢碌脷脪禄赂枚路镁脦帽脝梅
     if (g_server_activeId == 0)
     {
         return 1;
     }
     int ipValidNum = g_server_activeId;
-    // 如果当前失效，则从所有服务器列表中找到一个可用服务器
+    // 脠莽鹿没碌卤脟掳脢搂脨搂拢卢脭貌麓脫脣霉脫脨路镁脦帽脝梅脕脨卤铆脰脨脮脪碌陆脪禄赂枚驴脡脫脙路镁脦帽脝梅
     if (ipValidNum < 0)
     {
         ipValidNum = g_server_count;
     }
 
-    for (int i = 0; i < ipValidNum; ++i)
+	int i = 0;
+    for (; i < ipValidNum; ++i)
     {
-        // @todo ,这边默认先设置成阻塞
+        // @todo ,脮芒卤脽脛卢脠脧脧脠脡猫脰脙鲁脡脳猫脠没
         newFd = anetTcpConnect(NULL, g_server_ips[i], g_server_ports[i]);
         if (newFd > 0)
         {
             g_server_activeId = i;
             strcpy(g_cat_send_ip, g_server_ips[i]);
+            g_cat_send_port = g_server_ports[i];
             oldFd = g_cat_send_fd;
             g_cat_send_fd = newFd;
             if (oldFd > 0)
@@ -75,7 +77,7 @@ static void updateCatActiveConnIndex()
         if (strcmp(g_server_ips[i], g_cat_send_ip) == 0 && g_server_ports[i] == g_cat_send_port)
         {
             g_server_activeId = i;
-            break;
+            return;
         }
     }
     g_server_activeId = -1;
@@ -127,7 +129,7 @@ static int resolveServerIps()
 
     ZRCS_ENTER(g_server_lock);
 
-    // 如果这次请求到IP，需要把上次保存的删除
+    // 脠莽鹿没脮芒麓脦脟毛脟贸碌陆IP拢卢脨猫脪陋掳脩脡脧麓脦卤拢麓忙碌脛脡戮鲁媒
     for (i = 0; i < g_server_count; ++i)
     {
         sdsfree(g_server_ips[i]);
@@ -149,9 +151,9 @@ static int resolveServerIps()
 
 static int getRouterFromServer(char * hostName, unsigned short port, char * domain)
 {
-    // @debug
-    return 0;
-    // @debug end
+//     // @debug
+//     return 0;
+//     // @debug end
     int sockfd = -1;
     if (g_server_requestBuf == NULL)
     {
@@ -166,7 +168,7 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     sockfd = anetTcpConnect(NULL, destIP, port);
     if (sockfd < 0)
     {
-        INNER_LOG(CLOG_WARNING, "向服务器 %s %d发起连接失败.", destIP, port);
+        INNER_LOG(CLOG_WARNING, "脧貌路镁脦帽脝梅 %s %d路垄脝冒脕卢陆脫脢搂掳脺.", destIP, port);
         return 0;
     }
     sdsclear(g_server_requestBuf);
@@ -188,12 +190,13 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
         return 0;
     }
     char resp[1024];
-    status = anetRead(sockfd, resp, 1024);
+    status = anetRead(sockfd, resp, 1023);
     if (status == ANET_ERR || status < 4)
     {
         anetClose(sockfd);
         return 0;
     }
+    resp[status] = '\0';
     char *t = strstr(resp, "\r\n\r\n");
     if (!t)
     {
@@ -212,8 +215,17 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
         g_server_responseBody = sdsnewEmpty(1024);
         catChecktPtr(g_server_responseBody);
     }
+    else
+    {
+        // 脠莽鹿没脕陆麓脦脧脿脥卢戮脥虏禄脨猫脪陋脟驴脨脨赂眉脨脗
+        if (strcmp(g_server_responseBody, body) == 0)
+        {
+            return g_server_count;
+        }
+    }
+    INNER_LOG(CLOG_INFO, "脧貌路镁脦帽脝梅虏茅脩炉碌陆驴脡脫脙路镁脦帽脝梅脕脨卤铆 %s .", body);
     sdscpy(g_server_responseBody, body);
-    return sdslen(g_server_responseBody);
+    return resolveServerIps();
 }
 
 
@@ -224,10 +236,10 @@ int recoverCatServerConn()
     g_server_activeId = -1;
     if (!tryConnBestServer())
     {
-        INNER_LOG(CLOG_WARNING, "直接恢复与服务器连接失败, 尝试更新路由.");
+        INNER_LOG(CLOG_WARNING, "脰卤陆脫禄脰赂麓脫毛路镁脦帽脝梅脕卢陆脫脢搂掳脺, 鲁垄脢脭赂眉脨脗脗路脫脡.");
         if (!updateCatServerConn())
         {
-            INNER_LOG(CLOG_ERROR, "再次尝试失败，服务器当前不可用.");
+            INNER_LOG(CLOG_ERROR, "脭脵麓脦鲁垄脢脭脢搂掳脺拢卢路镁脦帽脝梅碌卤脟掳虏禄驴脡脫脙.");
             return 0;
         }
     }
@@ -238,7 +250,7 @@ int initCatServerConnManager()
 {
     g_server_lock = ZRCreateCriticalSection();
 
-    // 先从配置那边读过来初始的服务器配置，这样即使在router服务器不可用的情况下也可以连接server
+    // 脧脠麓脫脜盲脰脙脛脟卤脽露脕鹿媒脌麓鲁玫脢录碌脛路镁脦帽脝梅脜盲脰脙拢卢脮芒脩霉录麓脢鹿脭脷router路镁脦帽脝梅虏禄驴脡脫脙碌脛脟茅驴枚脧脗脪虏驴脡脪脭脕卢陆脫server
     g_server_count = g_config.serverNum;
     if (g_server_count > 64)
     {
@@ -262,7 +274,10 @@ void clearCatServerConnManager()
 {
     int i = 0;
     ZRDeleteCriticalSection(g_server_lock);
-    anetClose(g_cat_send_fd);
+    if (g_cat_send_fd > 0)
+    {
+        anetClose(g_cat_send_fd);
+    }
     for (i = 0; i < g_server_count; ++i)
     {
         sdsfree(g_server_ips[i]);
@@ -271,9 +286,9 @@ void clearCatServerConnManager()
 }
 int updateCatServerConn()
 {
-    // @todo for wyp 这边不知道具体连那个端口。。。是配置还是用户填还是默认？
-    int rst = getRouterFromServer(g_cat_messageManager.m_hostname, 80, g_cat_messageManager.m_domain);
-    if (rst > 0)
+    // @todo for wyp 脮芒卤脽虏禄脰陋碌脌戮脽脤氓脕卢脛脟赂枚露脣驴脷隆拢隆拢隆拢脢脟脜盲脰脙禄鹿脢脟脫脙禄搂脤卯禄鹿脢脟脛卢脠脧拢驴
+    int rst = getRouterFromServer(g_cat_messageManager.m_hostname, 8080, g_cat_messageManager.m_domain);
+    //if (rst > 0)
     {
         updateCatActiveConnIndex();
         if (tryConnBestServer() == 0)

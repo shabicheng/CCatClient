@@ -93,7 +93,6 @@ void * popBackZRStaticQueue(ZRStaticQueue * pQueue)
         }
     }
 
-    --pQueue->size;
     return pData;
 }
 
@@ -120,7 +119,6 @@ void * popFrontZRStaticQueue(ZRStaticQueue * pQueue)
         }
     }
 
-    --pQueue->size;
     return pData;
 }
 

@@ -36,22 +36,22 @@ void * getZRStaticQueueByIndex(ZRStaticQueue * pQueue, size_t index);
 void clearZRStaticQueue(ZRStaticQueue * pQueue);
 void destroyZRStaticQueue(ZRStaticQueue * pQueue);
 
-inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
+static inline size_t getZRStaticQueueSize(ZRStaticQueue * pQueue)
 {
     return pQueue->size;
 }
 
-inline int isZRStaticQueueEmpty(ZRStaticQueue * pQueue)
+static inline int isZRStaticQueueEmpty(ZRStaticQueue * pQueue)
 {
     return !pQueue->size;
 }
 
-inline int isZRStaticQueueFull(ZRStaticQueue * pQueue)
+static inline int isZRStaticQueueFull(ZRStaticQueue * pQueue)
 {
 	return !(pQueue->maxQueueSize - pQueue->size);
 }
 
-inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
+static inline int getZRStaticQueueRightDirect(ZRStaticQueue * pQueue)
 {
     return pQueue->head - pQueue->tail;
 }

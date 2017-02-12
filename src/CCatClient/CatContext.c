@@ -16,6 +16,7 @@ CatContext * getCatContext()
     {
         g_cat_context = (CatContext *)malloc(sizeof(CatContext));
         catChecktPtr(g_cat_context);
+        g_cat_context->m_lastTruncateTransDurationUs = 0;
         g_cat_context->m_elementSize = 0;
         g_cat_context->m_rootMsg = createCatRootMessage();
         catChecktPtr(g_cat_context->m_rootMsg);
@@ -47,7 +48,7 @@ int hasCatContext()
 void resetCatContext()
 {
     g_cat_context->m_elementSize = 0;
-    g_cat_context->m_rootMsg = NULL;
+    g_cat_context->m_rootMsg;
     g_cat_context->m_lastTruncateTransDurationUs = 0;
     clearZRStaticStack(g_cat_context->m_transStack);
 }

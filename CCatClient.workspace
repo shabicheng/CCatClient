@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="CCatClient" Database="CCatClient.tags">
+  <Project Name="CCatClient" Path="CodeLite/CCatClient/CCatClient.project" Active="No"/>
+  <Project Name="CCatClientTest" Path="CodeLite/CCatClientTest/CCatClientTest.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="no">
+      <Environment/>
+      <Project Name="CCatClient" ConfigName="Debug"/>
+      <Project Name="CCatClientTest" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Environment/>
+      <Project Name="CCatClient" ConfigName="Release"/>
+      <Project Name="CCatClientTest" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>

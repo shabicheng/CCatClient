@@ -7,7 +7,7 @@
 // @Last Modified On 11-17-2015
 // 
 // @copyright        Copyright (c) ZhenRong. All rights reserved.
-// @summary          多线程操作的一些基本资源封装，信号量、互斥锁、临界区
+// @summary          露脿脧脽鲁脤虏脵脳梅碌脛脪禄脨漏禄霉卤戮脳脢脭麓路芒脳掳拢卢脨脜潞脜脕驴隆垄禄楼鲁芒脣酶隆垄脕脵陆莽脟酶
 // **************************************************************************************************/
 #ifndef _ZRMULTITHREADUTILITY_
 #define _ZRMULTITHREADUTILITY_
@@ -15,14 +15,14 @@
 #include "ZRLibraryGlobal.h"
 
 
-//以下为各种和操作系统资源相关的工具宏定义
+//脪脭脧脗脦陋赂梅脰脰潞脥虏脵脳梅脧碌脥鲁脳脢脭麓脧脿鹿脴碌脛鹿陇戮脽潞锚露篓脪氓
 #ifdef WIN32
-/// * @brief    /临界区资源
+/// * @brief    /脕脵陆莽脟酶脳脢脭麓
 typedef LPCRITICAL_SECTION ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 /// *************************************************************************************************
 /// * @fn       ZRCreateCriticalSection
-/// * @brief    创建互斥锁.
+/// * @brief    麓麓陆篓禄楼鲁芒脣酶.
 /// * @param    spinCount  The spin count.
 /// * @returns    ZRCRITICALSECTION.
 /// * 
@@ -34,7 +34,7 @@ typedef LPCRITICAL_SECTION ZRCRITICALSECTION;
 /// * 
 /// * @date     2015/11/20 17:42:27
 /// ************************************************************************************************/
-ZRCRITICALSECTION inline ZRCreateCriticalSection()
+static inline ZRCRITICALSECTION ZRCreateCriticalSection()
 {
 	ZRCRITICALSECTION cs = (CRITICAL_SECTION *)malloc(sizeof(CRITICAL_SECTION));
 	//assert(cs != INVALID_CRITSECT);
@@ -50,7 +50,7 @@ ZRCRITICALSECTION inline ZRCreateCriticalSection()
 }
 /// *************************************************************************************************
 /// * @fn       ZRDeleteCriticalSection
-/// * @brief    删除互斥锁
+/// * @brief    脡戮鲁媒禄楼鲁芒脣酶
 /// * @param    cs  The cs.
 /// * 
 /// * @details  
@@ -61,7 +61,7 @@ ZRCRITICALSECTION inline ZRCreateCriticalSection()
 /// * 
 /// * @date     2015/11/20 17:42:36
 /// ************************************************************************************************/
-void inline ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
+static inline void ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 {
 	if (cs != INVALID_CRITSECT)
 	{
@@ -71,49 +71,49 @@ void inline ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 	}
 }
 
-/// * @brief    加锁
+/// * @brief    录脫脣酶
 #define ZRCS_ENTER(cs) EnterCriticalSection(cs)
-/// * @brief    解锁
+/// * @brief    陆芒脣酶
 #define ZRCS_LEAVE(cs) LeaveCriticalSection(cs)
 
-/// * @brief    互斥锁，为兼容已有系统
+/// * @brief    禄楼鲁芒脣酶拢卢脦陋录忙脠脻脪脩脫脨脧碌脥鲁
 #define MUTEX CRITICAL_SECTION
-/// * @brief    加锁
+/// * @brief    录脫脣酶
 #define MUTEX_LOCK(mutex) EnterCriticalSection(&mutex)
-/// * @brief    解锁
+/// * @brief    陆芒脣酶
 #define MUTEX_UNLOCK(mutex) LeaveCriticalSection(&mutex)
-/// * @brief    互斥锁初始化
+/// * @brief    禄楼鲁芒脣酶鲁玫脢录禄炉
 #define MUTEX_INIT(mutex) InitializeCriticalSection(&mutex)
-/// * @brief    互斥锁销毁
+/// * @brief    禄楼鲁芒脣酶脧煤禄脵
 #define MUTEX_DESTROY(mutex) DeleteCriticalSection(&mutex)
 
-//信号量资源
-/// * @brief    信号量
+//脨脜潞脜脕驴脳脢脭麓
+/// * @brief    脨脜潞脜脕驴
 typedef HANDLE SEMA;
-/// * @brief    等待信号量一定时间
+/// * @brief    碌脠麓媒脨脜潞脜脕驴脪禄露篓脢卤录盲
 #define SEMA_WAIT_TIME(sema, delay) WaitForSingleObject(sema, delay)
-/// * @brief    一直阻塞地进行等待信号量
+/// * @brief    脪禄脰卤脳猫脠没碌脴陆酶脨脨碌脠麓媒脨脜潞脜脕驴
 #define SEMA_WAIT(sema) WaitForSingleObject(sema, INFINITE)
-/// * @brief    释放信号量
+/// * @brief    脢脥路脜脨脜潞脜脕驴
 #define SEMA_POST(sema) ReleaseSemaphore(sema, 1, NULL)
-/// * @brief    尝试获取一个信号量
+/// * @brief    鲁垄脢脭禄帽脠隆脪禄赂枚脨脜潞脜脕驴
 #define SEMA_TRYWAIT(sema) WaitForSingleObject(sema, 0)
-/// * @brief    销毁信号量
+/// * @brief    脧煤禄脵脨脜潞脜脕驴
 #define SEMA_DESTROY(sema) CloseHandle(sema)
-/// * @brief    初始化信号量， 输入的为：信号量的最大值，初始信号量个数
+/// * @brief    鲁玫脢录禄炉脨脜潞脜脕驴拢卢 脢盲脠毛碌脛脦陋拢潞脨脜潞脜脕驴碌脛脳卯麓贸脰碌拢卢鲁玫脢录脨脜潞脜脕驴赂枚脢媒
 #define SEMA_INIT(sema, initCount, maxCount) sema = CreateSemaphore(NULL, initCount, maxCount, NULL)
-/// * @brief    初始一个带有名称的信号量，用于多进程交互
+/// * @brief    鲁玫脢录脪禄赂枚麓酶脫脨脙没鲁脝碌脛脨脜潞脜脕驴拢卢脫脙脫脷露脿陆酶鲁脤陆禄禄楼
 #define SEMA_INIT_NAME(sema, initCount, maxCount, semaName) sema = CreateSemaphore(NULL, initCount, maxCount, semaName)
-/// * @brief    信号量等待超时
+/// * @brief    脨脜潞脜脕驴碌脠麓媒鲁卢脢卤
 #define SEMA_WAIT_TIMEOUT WAIT_TIMEOUT
-/// * @brief    等待到信号量
+/// * @brief    碌脠麓媒碌陆脨脜潞脜脕驴
 #define SEMA_WAIT_OK WAIT_OBJECT_0
 
 
 
 #elif defined(_VXWORKS)
 
-//临界区资源
+//脕脵陆莽脟酶脳脢脭麓
 typedef SEM_ID ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 inline ZRCRITICALSECTION ZRCreateCriticalSection(int spinCount = 0)
@@ -139,7 +139,7 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 #define MUTEX_UNLOCK(mutex) semGive(mutex)
 #define MUTEX_INIT(mutex) mutex = semBCreate(SEM_Q_FIFO,SEM_FULL)
 #define MUTEX_DESTROY(mutex) semDelete(mutex)
-//信号量资源
+//脨脜潞脜脕驴脳脢脭麓
 #define SEMA SEM_ID
 #define SEMA_WAIT_TIME(sema,delay) semTake(sema, delay)
 #define SEMA_WAIT(sema) semTake(sema, WAIT_FOREVER)
@@ -147,7 +147,7 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 #define SEMA_DESTROY(sema) semDelete(sema)
 #define SEMA_INIT(sema, initCount, maxCount) sema = semCCreate(SEM_Q_FIFO,initCount)
 #define SEMA_WAIT_TIMEOUT ERROR
-//线程资源
+//脧脽鲁脤脳脢脭麓
 #define THREADID int
 #define SOCKET int
 #define closesocket(s_) close(s_)
@@ -157,16 +157,16 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 
 
 
-//临界区资源
+//脕脵陆莽脟酶脳脢脭麓
 typedef pthread_mutex_t* ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 // !!!!!!!!!!!!!!!!
-// *注意*
-// 在Linux下的mutex不能设置自旋等待时间
-// 所以该函数的参数将被忽略
-inline ZRCRITICALSECTION ZRCreateCriticalSection()
+// *脳垄脪芒*
+// 脭脷Linux脧脗碌脛mutex虏禄脛脺脡猫脰脙脳脭脨媒碌脠麓媒脢卤录盲
+// 脣霉脪脭赂脙潞炉脢媒碌脛虏脦脢媒陆芦卤禄潞枚脗脭
+static inline ZRCRITICALSECTION ZRCreateCriticalSection()
 {
-	ZRCRITICALSECTION cs = new pthread_mutex_t;
+	ZRCRITICALSECTION cs = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	int ret;
 	assert(cs != INVALID_CRITSECT);
 	
@@ -180,12 +180,12 @@ inline ZRCRITICALSECTION ZRCreateCriticalSection()
 	
 	return cs;
 }
-inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
+static inline void ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 {
 	if (cs != INVALID_CRITSECT)
 	{
 		pthread_mutex_destroy(cs);
-		delete cs;
+		free(cs);
 		cs = 0;
 	}
 }
@@ -204,10 +204,10 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 #define MUTEX_DESTROY(mutex) pthread_mutex_destroy(&mutex)
 
 
-inline int sema_wait_time_(sem_t* sema, unsigned int delay)
+static inline int sema_wait_time_(sem_t* sema, unsigned int delay)
 {
 	struct timespec ts;
-	if (::clock_gettime(CLOCK_REALTIME, &ts) != 0)
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
 	{
 		return -1;
 	}
@@ -234,7 +234,7 @@ inline int sema_wait_time_(sem_t* sema, unsigned int delay)
 
 
 
-// 网络Socket资源
+// 脥酶脗莽Socket脳脢脭麓
 typedef int SOCKET;
 
 typedef struct _FILETIME

@@ -7,8 +7,8 @@
 // @Last Modified On 11-19-2015
 // 
 // @copyright        Copyright (c) ZhenRong. All rights reserved.
-// @summary          时间操作的一些公共类，我们把时间表示为64位整形，并提供一些操作函数
-//                   在这里面还提供了高精度计时的一些函数，多用于测试代码运行时间
+// @summary          脢卤录盲虏脵脳梅碌脛脪禄脨漏鹿芦鹿虏脌脿拢卢脦脪脙脟掳脩脢卤录盲卤铆脢戮脦陋64脦禄脮没脨脦拢卢虏垄脤谩鹿漏脪禄脨漏虏脵脳梅潞炉脢媒
+//                   脭脷脮芒脌茂脙忙禄鹿脤谩鹿漏脕脣赂脽戮芦露脠录脝脢卤碌脛脪禄脨漏潞炉脢媒拢卢露脿脫脙脫脷虏芒脢脭麓煤脗毛脭脣脨脨脢卤录盲
 // **************************************************************************************************/
 
 #ifndef  _TIMEUTILITY_
@@ -23,11 +23,11 @@
 
 /**********************************
 Function:	 GetTime64
-Description: 获取系统64位时间，时间/1000为seconds since midnight, January 1, 1970(UTC)
-			 时间 %1000 为毫秒
+Description: 禄帽脠隆脧碌脥鲁64脦禄脢卤录盲拢卢脢卤录盲/1000脦陋seconds since midnight, January 1, 1970(UTC)
+			 脢卤录盲 %1000 脦陋潞脕脙毛
 Return: u_int64
 ***********************************/
-u_int64 inline GetTime64()
+static u_int64 inline GetTime64()
 {
 	u_int64 buf;
 #if defined(WIN32)
@@ -36,37 +36,34 @@ u_int64 inline GetTime64()
 	buf = (timeBuf.time * 1000) + (timeBuf.millitm);
 #elif defined(__linux__)
 	// @add by Tim at 2015-08-18 10:15:29
-	timespec ts;
-	if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
-	{
-		return (u_int64)-1;
-	}
-	buf = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	buf = tv.tv_sec * 1000 + tv.tv_usec / 1000000;
 	// @add end
 #endif
 	return buf;
 }
 /**********************************
 Function:	 GetTimeIntervalLength64
-Description: 获取两个时间区间长度，单位毫秒
-Input:		 u_int64 oldTime 靠前的时间, u_int64 newTime 靠后的时间
+Description: 禄帽脠隆脕陆赂枚脢卤录盲脟酶录盲鲁陇露脠拢卢碌楼脦禄潞脕脙毛
+Input:		 u_int64 oldTime 驴驴脟掳碌脛脢卤录盲, u_int64 newTime 驴驴潞贸碌脛脢卤录盲
 Return:		 u_int64
 ***********************************/
-int64 inline GetTimeIntervalLength64(u_int64 oldTime, u_int64 newTime)
+static int64 inline GetTimeIntervalLength64(u_int64 oldTime, u_int64 newTime)
 {
 	return newTime - oldTime;
 }
 
 /**********************************
 Function:	 SetNowTime
-Description: 设置系统当前时间
+Description: 脡猫脰脙脧碌脥鲁碌卤脟掳脢卤录盲
 Input:		 u_int64 nowTime
 Return:		 bool
 ***********************************/
-int inline SetNowTime(u_int64 nowTime)
+static int inline SetNowTime(u_int64 nowTime)
 {
 #ifdef WIN32
-	//更新本地系统时间
+	//赂眉脨脗卤戮碌脴脧碌脥鲁脢卤录盲
 	SYSTEMTIME curr_st;
 	struct tm *local = NULL;
 	time_t tt = nowTime / 1000;
@@ -93,7 +90,7 @@ int inline SetNowTime(u_int64 nowTime)
 	else
 	{
 		printf("Update local time successfully!\n");
-		printf("Current time:%u年 %u月 %u日 %u时 %u分 %u秒 %u毫秒\n",
+		printf("Current time:%u脛锚 %u脭脗 %u脠脮 %u脢卤 %u路脰 %u脙毛 %u潞脕脙毛\n",
 			curr_st.wYear, curr_st.wMonth, curr_st.wDay, curr_st.wHour, curr_st.wMinute,
 			curr_st.wSecond, curr_st.wMilliseconds);
 		return 1;
@@ -104,11 +101,11 @@ int inline SetNowTime(u_int64 nowTime)
 
 /**********************************
 Function:	 GetTimeIncrementLength64
-Description: 计算时间增量，增加的单位为ms
+Description: 录脝脣茫脢卤录盲脭枚脕驴拢卢脭枚录脫碌脛碌楼脦禄脦陋ms
 Input:		 u_int64 srcTime, u_int64 incTime
 Return:		 u_int64
 ***********************************/
-u_int64 inline GetTimeIncrementLength64(u_int64 srcTime, int64 incTime)
+static u_int64 inline GetTimeIncrementLength64(u_int64 srcTime, int64 incTime)
 {
 	return srcTime + incTime;
 }
@@ -117,13 +114,13 @@ u_int64 inline GetTimeIncrementLength64(u_int64 srcTime, int64 incTime)
 
 /**********************************
 Function:	 GetTimeString
-Description: 获取时间，格式为2013-10-11 23:21:16
-Input:		 u_int64 srcTime = 0,如果srcTime为0，则使用当前时间，否则使用srcTime时间
+Description: 禄帽脠隆脢卤录盲拢卢赂帽脢陆脦陋2013-10-11 23:21:16
+Input:		 u_int64 srcTime = 0,脠莽鹿没srcTime脦陋0拢卢脭貌脢鹿脫脙碌卤脟掳脢卤录盲拢卢路帽脭貌脢鹿脫脙srcTime脢卤录盲
 Return:		 string
 ***********************************/
 char *  GetTimeString(u_int64 srcTime);
 
-int inline GetTimeHour(u_int64 timeV)
+static int inline GetTimeHour(u_int64 timeV)
 {
     time_t t = 0;
     struct tm * pTm = NULL;
@@ -141,20 +138,23 @@ int inline GetTimeHour(u_int64 timeV)
 
 /**********************************
 Function:	 GetDetailTimeString
-Description: 获取时间，格式为2013-10-11 23:21:16
-Input:		 u_int64 srcTime = 0,如果srcTime为0，则使用当前时间，否则使用srcTime时间
+Description: 禄帽脠隆脢卤录盲拢卢赂帽脢陆脦陋2013-10-11 23:21:16
+Input:		 u_int64 srcTime = 0,脠莽鹿没srcTime脦陋0拢卢脭貌脢鹿脫脙碌卤脟掳脢卤录盲拢卢路帽脭貌脢鹿脫脙srcTime脢卤录盲
 Return:		 string
 ***********************************/
 char *  GetDetailTimeString(u_int64 srcTime);
 
 
+char * GetCatTimeString(u_int64 srcTime);
+
+
 /**********************************
 Function:	 GetPerformanceFrequency
-Description: 获取精确定时器频率
+Description: 禄帽脠隆戮芦脠路露篓脢卤脝梅脝碌脗脢
 Input:		
-Return:		 true获得成功 false表示不支持精确定时
+Return:		 true禄帽碌脙鲁脡鹿娄 false卤铆脢戮虏禄脰搂鲁脰戮芦脠路露篓脢卤
 ***********************************/
-int inline GetPerformanceFrequency(int64 * frequence)
+static int inline GetPerformanceFrequency(int64 * frequence)
 {
 #ifdef WIN32
 	LARGE_INTEGER f;
@@ -177,7 +177,7 @@ return 0;
 }
 
 
-int64 inline GetPerformanceCounter()
+static int64 inline GetPerformanceCounter()
 {
 #ifdef WIN32
 	LARGE_INTEGER c;
@@ -194,7 +194,7 @@ int64 inline GetPerformanceCounter()
 }
 
 
-//时间区间
+//脢卤录盲脟酶录盲
 typedef struct _TimeInterval
 {
 	u_int64 time_s;
@@ -203,12 +203,12 @@ typedef struct _TimeInterval
 
 /**********************************
 Function:	 TimeIntervalCompare
-Description: 时间区间的比较，主要是反应des的区间与res重合程度
+Description: 脢卤录盲脟酶录盲碌脛卤脠陆脧拢卢脰梅脪陋脢脟路麓脫娄des碌脛脟酶录盲脫毛res脰脴潞脧鲁脤露脠
 Input:		 TimeInterval & resInterval, TimeInterval & desInterval
 Return:	
-Others:      返回值是rst,rst =0表示没有重合，其他返回值参见注释
+Others:      路碌禄脴脰碌脢脟rst,rst =0卤铆脢戮脙禄脫脨脰脴潞脧拢卢脝盲脣没路碌禄脴脰碌虏脦录没脳垄脢脥
 ***********************************/
-inline u_int8 TimeIntervalCompare(TimeInterval * resInterval, TimeInterval  *desInterval)
+static inline u_int8 TimeIntervalCompare(TimeInterval * resInterval, TimeInterval  *desInterval)
 {
 	u_int8 rst = 0;
 	if (resInterval->time_e < desInterval->time_s)

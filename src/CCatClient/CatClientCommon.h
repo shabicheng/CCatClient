@@ -21,17 +21,17 @@
 #endif
 
 
-#define CAT_SUCCESS "SUCCESS"
-#define CAT_ERROR "ERROR"
+#define CAT_SUCCESS "0"
+#define CAT_ERROR "-1"
 #define CAT_FAIL "FAIL"
 
-// 检查申请出来的内存，如果申请出来的为NULL，则代表当前程序内存已满
-// 目前先简单实现，只是打印，然后退出
-// 未来需要在检测到异常时，直接尝试发送一条内存已满的消息到服务器
-// 注意，这条消息一定要事先申请好内存，最好直接调用当前可用的socket发送
+// 录矛虏茅脡锚脟毛鲁枚脌麓碌脛脛脷麓忙拢卢脠莽鹿没脡锚脟毛鲁枚脌麓碌脛脦陋NULL拢卢脭貌麓煤卤铆碌卤脟掳鲁脤脨貌脛脷麓忙脪脩脗煤
+// 脛驴脟掳脧脠录貌碌楼脢碌脧脰拢卢脰禄脢脟麓貌脫隆拢卢脠禄潞贸脥脣鲁枚
+// 脦麓脌麓脨猫脪陋脭脷录矛虏芒碌陆脪矛鲁拢脢卤拢卢脰卤陆脫鲁垄脢脭路垄脣脥脪禄脤玫脛脷麓忙脪脩脗煤碌脛脧没脧垄碌陆路镁脦帽脝梅
+// 脳垄脪芒拢卢脮芒脤玫脧没脧垄脪禄露篓脪陋脢脗脧脠脡锚脟毛潞脙脛脷麓忙拢卢脳卯潞脙脰卤陆脫碌梅脫脙碌卤脟掳驴脡脫脙碌脛socket路垄脣脥
 void catChecktPtr(void *);
 
-inline unsigned long long catTrimToHour(unsigned long long timeMs)
+static inline unsigned long long catTrimToHour(unsigned long long timeMs)
 {
     return timeMs / (3600 * 1000);
 }

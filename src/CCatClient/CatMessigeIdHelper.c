@@ -78,6 +78,7 @@ sds getNextMessageId()
         g_next_start = 10000;
         g_id_index = 0;
         saveFlag = 1;
+        sdsclear(g_id_prefix);
         g_id_prefix = sdscatprintf(g_id_prefix, "%s-%s-%lld-", g_cat_messageManager.m_domain, g_cat_messageManager.m_ipX, g_last_hour);
     }
 
@@ -100,6 +101,7 @@ sds getNextMessageId()
 
 void reuseMessageId(sds msgId)
 {
+    sdsfree(msgId);
     // 暂时不做这个
     return;
 }

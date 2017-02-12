@@ -10,20 +10,20 @@
 
 char * GetTimeString(u_int64 srcTime)
 {
-    //tm数据结构解释
+    //tm脢媒戮脻陆谩鹿鹿陆芒脢脥
     //struct tm 
     //{
-    //	int tm_sec; /* 秒–取值区间为[0,59] */
-    //	int tm_min; /* 分 - 取值区间为[0,59] */
-    //	int tm_hour; /* 时 - 取值区间为[0,23] */
-    //	int tm_mday; /* 一个月中的日期 - 取值区间为[1,31] */
-    //	int tm_mon; /* 月份（从一月开始，0代表一月） - 取值区间为[0,11] */
-    //	int tm_year; /* 年份，其值从1900开始 */
-    //	int tm_wday; /* 星期–取值区间为[0,6]，其中0代表星期天，1代表星期一，以此类推 */
-    //	int tm_yday; /* 从每年的1月1日开始的天数–取值区间为[0,365]，其中0代表1月1日，1代表1月2日，以此类推 */
-    //	int tm_isdst; /* 夏令时标识符，实行夏令时的时候，tm_isdst为正。不实行夏令时的进候，tm_isdst为0；不了解情况时，tm_isdst()为负。*/
-    //	long int tm_gmtoff; /*指定了日期变更线东面时区中UTC东部时区正秒数或UTC西部时区的负秒数*/
-    //	const char *tm_zone; /*当前时区的名字(与环境变量TZ有关)*/
+    //	int tm_sec; /* 脙毛篓C脠隆脰碌脟酶录盲脦陋[0,59] */
+    //	int tm_min; /* 路脰 - 脠隆脰碌脟酶录盲脦陋[0,59] */
+    //	int tm_hour; /* 脢卤 - 脠隆脰碌脟酶录盲脦陋[0,23] */
+    //	int tm_mday; /* 脪禄赂枚脭脗脰脨碌脛脠脮脝脷 - 脠隆脰碌脟酶录盲脦陋[1,31] */
+    //	int tm_mon; /* 脭脗路脻拢篓麓脫脪禄脭脗驴陋脢录拢卢0麓煤卤铆脪禄脭脗拢漏 - 脠隆脰碌脟酶录盲脦陋[0,11] */
+    //	int tm_year; /* 脛锚路脻拢卢脝盲脰碌麓脫1900驴陋脢录 */
+    //	int tm_wday; /* 脨脟脝脷篓C脠隆脰碌脟酶录盲脦陋[0,6]拢卢脝盲脰脨0麓煤卤铆脨脟脝脷脤矛拢卢1麓煤卤铆脨脟脝脷脪禄拢卢脪脭麓脣脌脿脥脝 */
+    //	int tm_yday; /* 麓脫脙驴脛锚碌脛1脭脗1脠脮驴陋脢录碌脛脤矛脢媒篓C脠隆脰碌脟酶录盲脦陋[0,365]拢卢脝盲脰脨0麓煤卤铆1脭脗1脠脮拢卢1麓煤卤铆1脭脗2脠脮拢卢脪脭麓脣脌脿脥脝 */
+    //	int tm_isdst; /* 脧脛脕卯脢卤卤锚脢露路没拢卢脢碌脨脨脧脛脕卯脢卤碌脛脢卤潞貌拢卢tm_isdst脦陋脮媒隆拢虏禄脢碌脨脨脧脛脕卯脢卤碌脛陆酶潞貌拢卢tm_isdst脦陋0拢禄虏禄脕脣陆芒脟茅驴枚脢卤拢卢tm_isdst()脦陋赂潞隆拢*/
+    //	long int tm_gmtoff; /*脰赂露篓脕脣脠脮脝脷卤盲赂眉脧脽露芦脙忙脢卤脟酶脰脨UTC露芦虏驴脢卤脟酶脮媒脙毛脢媒禄貌UTC脦梅虏驴脢卤脟酶碌脛赂潞脙毛脢媒*/
+    //	const char *tm_zone; /*碌卤脟掳脢卤脟酶碌脛脙没脳脰(脫毛禄路戮鲁卤盲脕驴TZ脫脨鹿脴)*/
     //};
 
     time_t t = 0;
@@ -37,9 +37,9 @@ char * GetTimeString(u_int64 srcTime)
     }
 
     static THREADLOCAL char * tmp = NULL;
-    if (tmp != NULL)
+    if (tmp == NULL)
     {
-        (char *)malloc(64);
+        tmp = (char *)malloc(128);
     }
 #pragma warning( push )
 #pragma warning( disable : 4996 )
@@ -65,13 +65,13 @@ char * GetDetailTimeString(u_int64 srcTime)
     }
 #elif defined(__linux__)
     // @add by Tim at 2015-08-18 10:15:29
-    timespec ts;
+    struct timespec ts;
     if (srcTime == 0)
     {
         t = time(0);
         if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
         {
-            return string();
+            return NULL;
         }
     }
     else
@@ -82,9 +82,9 @@ char * GetDetailTimeString(u_int64 srcTime)
     // @add end
 #endif
     static THREADLOCAL char * tmp = NULL;
-    if (tmp != NULL)
+    if (tmp == NULL)
     {
-        (char *)malloc(128);
+        tmp = (char *)malloc(128);
     }
 #pragma warning( push )
 #pragma warning( disable : 4996 )
@@ -99,4 +99,58 @@ char * GetDetailTimeString(u_int64 srcTime)
     // @add end
 #endif
     return tmp;
+}
+
+char * GetCatTimeString(u_int64 srcTime)
+{
+    time_t t = 0;
+#if defined(WIN32)
+    struct __timeb64 timeBuf;
+    if (srcTime == 0)
+    {
+        t = time(0);
+        _ftime64_s(&timeBuf);
+    }
+    else
+    {
+        t = srcTime / 1000;
+        timeBuf.millitm = srcTime % 1000;
+    }
+#elif defined(__linux__)
+    // @add by Tim at 2015-08-18 10:15:29
+    struct timespec ts;
+    if (srcTime == 0)
+    {
+        t = time(0);
+        if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+        {
+            return NULL;
+        }
+    }
+    else
+    {
+        t = srcTime / 1000;
+        ts.tv_nsec = (srcTime % 1000) * 1000000;
+    }
+    // @add end
+#endif
+    static THREADLOCAL char * tmp = NULL;
+    if (tmp == NULL)
+    {
+        tmp = (char *)malloc(128);
+    }
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+    strftime(tmp, 128, "%Y-%m-%d %H:%M:%S", localtime(&t));
+#pragma warning( pop )
+    size_t timeBufLen = strlen(tmp);
+#if defined(WIN32)
+    sprintf_s(tmp + timeBufLen, 128 - timeBufLen, ".%03d", timeBuf.millitm);
+#else
+    // @add by Tim at 2015-08-18 10:34:39
+    snprintf(tmp + timeBufLen, sizeof(tmp) - timeBufLen, "-%03d", (int)(ts.tv_nsec / 1000000));
+    // @add end
+#endif
+    return tmp;
+
 }

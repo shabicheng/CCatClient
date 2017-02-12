@@ -31,10 +31,14 @@ void catMessageManagerFlush(CatRootMessage * rootMsg)
     }
     if (isCatSenderEnable() && g_config.messageEnableFlag)
     {
-        sendRootMessage(rootMsg);
+        if (sendRootMessage(rootMsg) != 1)
+        {
+            deleteCatRootMessage(rootMsg);
+        }
     }
     else
     {
+        deleteCatRootMessage(rootMsg);
         ++g_cat_messageManager.m_throttleTimes;
         if (g_cat_messageManager.m_throttleTimes == 1 || g_cat_messageManager.m_throttleTimes % 10000 == 0)
         {
@@ -55,10 +59,23 @@ void catMessageManagerInitialize(const char * domain, const char * hostName)
     g_cat_messageManager.m_ip = sdsnewEmpty(64);
     catChecktPtr(g_cat_messageManager.m_ip);
     anetResolveIP(NULL, NULL, g_cat_messageManager.m_ip, 64);
+	
+	// @todo for wyp, cannot find self ip in ubuntu
+	if (g_cat_messageManager.m_ip[0] == '\0')
+	{
+		sdscpy(g_cat_messageManager.m_ip, "192.168.110.161");
+	}
 
     g_cat_messageManager.m_ipX = sdsnewEmpty(64);
     catChecktPtr(g_cat_messageManager.m_ipX);
     anetResolveIPHex(NULL, NULL, g_cat_messageManager.m_ipX, 64);
+	
+	// @todo for wyp, cannot find self ip in ubuntu
+	if (g_cat_messageManager.m_ipX[0] == '\0')
+	{
+		sdscpy(g_cat_messageManager.m_ipX, "c0a86ea1");
+	}
+
 
 }
 

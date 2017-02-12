@@ -8,6 +8,7 @@
 #include "CatMessageMergeAndEncode.h"
 #include "ZRLibraryGlobal.h"
 #include "CatContext.h"
+//#include "vld.h"
 
 int catClientInit()
 {
@@ -42,7 +43,7 @@ int catClientDestroy()
 
 void logError(const char * msg, const char * errStr)
 {
-    logEvent("Exception", "cerror", "ERROR", errStr);
+    logEvent("Exception", msg, "ERROR", errStr);
 }
 
 void logEvent(const char * type, const char * name, const char * status, const char * nameValuePairs)

@@ -11,46 +11,47 @@
 static void	addChild(CatTransaction* message, CatMessage* childMsg)
 {
 
-	CatTransactionInner * pInner = getInnerTrans(message);
-	int pushRst = pushBackZRStaticQueue(pInner->m_children, childMsg);
-	if (ZRSTATICQUEUE_ERR == pushRst)
-	{
-		// 按道理不会走到这
-        INNER_LOG(CLOG_ERROR, "为Trans添加子消息失败，队列已满 %d.", getZRStaticQueueSize(pInner->m_children));
-	}
+    CatTransactionInner * pInner = getInnerTrans(message);
+    int pushRst = pushBackZRStaticQueue(pInner->m_children, childMsg);
+    if (ZRSTATICQUEUE_ERR == pushRst)
+    {
+        // 掳麓碌脌脌铆虏禄禄谩脳脽碌陆脮芒
+        INNER_LOG(CLOG_ERROR, "脦陋Trans脤铆录脫脳脫脧没脧垄脢搂掳脺拢卢露脫脕脨脪脩脗煤 %d.", getZRStaticQueueSize(pInner->m_children));
+    }
 }
 
 static void * clear(CatMessage* message)
 {
-	CatTransactionInner * pInner = getInnerTrans(message);
-	pInner->clear(message);
-	for (size_t i = 0; i < getZRStaticQueueSize(pInner->m_children); ++i)
-	{
-		CatMessage * pMessage = getZRStaticQueueByIndex(pInner->m_children, i);
+    CatTransactionInner * pInner = getInnerTrans(message);
+    pInner->clear(message);
+	size_t i = 0;
+    for (; i < getZRStaticQueueSize(pInner->m_children); ++i)
+    {
+        CatMessage * pMessage = getZRStaticQueueByIndex(pInner->m_children, i);
         deleteCatMessage(pMessage);
-	}
-    clearZRStaticQueue(pInner->m_children);
-	return pInner;
+    }
+    destroyZRStaticQueue(pInner->m_children);
+    return pInner;
 }
 
 static void setTransactionComplete(CatTransaction * message)
 {
-	CatTransactionInner * pInner = getInnerTrans(message);
-	// complete() was called more than once
-	if (pInner->m_completeFlag)
-	{
-		CatEvent * evt = createCatEvent("cat", "BadInstrument");
+    CatTransactionInner * pInner = getInnerTrans(message);
+    // complete() was called more than once
+    if (pInner->m_completeFlag)
+    {
+        CatEvent * evt = createCatEvent("cat", "BadInstrument");
 
-		evt->setStatus(evt, "TransactionAlreadyCompleted");
-		evt->setComplete(evt);
-		addChild(message, evt);
-	}
-	else
-	{
-		pInner->m_durationUs = GetTime64() * 1000 - pInner->m_durationStart / 1000;
-		pInner->setCompleteFlag((CatMessage *)message, 1);
-		catMessageManagerEndTrans(message);
-	}
+        evt->setStatus(evt, "TransactionAlreadyCompleted");
+        evt->setComplete(evt);
+        addChild(message, evt);
+    }
+    else
+    {
+        pInner->m_durationUs = GetTime64() * 1000 - pInner->m_durationStart / 1000;
+        pInner->setCompleteFlag((CatMessage *)message, 1);
+        catMessageManagerEndTrans(message);
+    }
 }
 
 static ZRStaticQueue * getChildren(CatTransaction* message)
@@ -61,21 +62,22 @@ static ZRStaticQueue * getChildren(CatTransaction* message)
 
 CatTransaction * createCatTransaction(const char *type, const char * name)
 {
-	CatTransactionInner * pTransInner = malloc(sizeof(CatTransaction) + sizeof(CatTransactionInner));
-	if (pTransInner == NULL)
-	{
-		return NULL;
-	}
-	CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransactionInner)));
-	initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
-	pTransInner->m_children = createZRStaticQueue(g_config.maxChildSize);
-	// 设置
-	// 
-	pTrans->setComplete = setTransactionComplete;
-	pTrans->addChild = addChild;
-	pTrans->clear = clear;
+    CatTransactionInner * pTransInner = malloc(sizeof(CatTransaction) + sizeof(CatTransactionInner));
+    if (pTransInner == NULL)
+    {
+        return NULL;
+    }
+    CatTransaction * pTrans = (CatTransaction *)(((char *)pTransInner + sizeof(CatTransactionInner)));
+    initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
+    pTransInner->m_children = createZRStaticQueue(g_config.maxChildSize);
+    pTransInner->m_durationStart = GetTime64() * 1000 * 1000;
+    // 脡猫脰脙
+    // 
+    pTrans->setComplete = setTransactionComplete;
+    pTrans->addChild = addChild;
+    pTrans->clear = clear;
     pTrans->getChildren = getChildren;
-	return pTrans;
+    return pTrans;
 }
 
 unsigned long long getCatTranscationDurationUs(CatTransaction * trans)

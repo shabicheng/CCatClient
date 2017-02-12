@@ -10,7 +10,7 @@
 
 static void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransaction * target, size_t level)
 {
-    // 拿到下一级的trans
+    // 脛脙碌陆脧脗脪禄录露碌脛trans
     CatTransaction * current = level < getZRStaticStackSize(pStack) ? (CatTransaction *)getZRStaticStackByIndex(pStack, level) : NULL;
     int shouldKeep = 0;
     CatTransactionInner * currentInner = getInnerTrans(current);
@@ -58,16 +58,16 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
     {
         return;
     }
-    // 注意，这个id是从pRootMsg拿出来的，及时为NULL，最终也会初始化并设置到pRootMsg上
+    // 脳垄脪芒拢卢脮芒赂枚id脢脟麓脫pRootMsg脛脙鲁枚脌麓碌脛拢卢录掳脢卤脦陋NULL拢卢脳卯脰脮脪虏禄谩鲁玫脢录禄炉虏垄脡猫脰脙碌陆pRootMsg脡脧
     sds id = pRootMsg->m_messageId;
 
     if (id == NULL) {
         id = getNextMessageId();
         pRootMsg->m_messageId = id;
     }
-    // 注意，这个id是从pRootMsg拿出来的
+    // 脳垄脪芒拢卢脮芒赂枚id脢脟麓脫pRootMsg脛脙鲁枚脌麓碌脛
     sds rootId = pRootMsg->m_rootMessageId;
-    // 注意，这个id是生成出来的
+    // 脳垄脪芒拢卢脮芒赂枚id脢脟脡煤鲁脡鲁枚脌麓碌脛
     sds childId = getNextMessageId();
 
     CatTransaction * source = (CatTransaction *)message;
@@ -80,7 +80,9 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 
     migrateMessage(pStack, source, target, 1);
 
-    for (size_t i = getZRStaticQueueSize(pStack) - 1; i >= 0; --i) 
+	size_t i;
+	i = getZRStaticQueueSize(pStack) - 1;
+    for (; i >= 0; --i) 
     {
         CatTransaction * t = (CatTransaction *)getZRStaticQueueByIndex(pStack, i);
         CatTransactionInner * iInner = getInnerTrans(t);
@@ -101,7 +103,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 
     pCp->m_rootMsg = (CatMessage *)target;
 
-    // 注意，childId 是new出来的 id rootId 本身就是pRootMsg，所以不需要再次sdsdup出来
+    // 脳垄脪芒拢卢childId 脢脟new鲁枚脌麓碌脛 id rootId 卤戮脡铆戮脥脢脟pRootMsg拢卢脣霉脪脭虏禄脨猫脪陋脭脵麓脦sdsdup鲁枚脌麓
     pRootMsg->m_messageId = childId;
     pRootMsg->m_parentMessageId = id;
     pRootMsg->m_rootMessageId = (rootId != NULL ? rootId : sdsdup(id));
@@ -128,7 +130,8 @@ void validateTransaction(CatTransaction * pParentTrans, CatTransaction * pTrans)
 {
 	CatTransactionInner * pTransInner = getInnerTrans(pTrans);
 	ZRStaticQueue * pChildren = pTransInner->m_children;
-	for (size_t i = 0; i < getZRStaticQueueSize(pChildren); ++i)
+	size_t i = 0;
+	for (; i < getZRStaticQueueSize(pChildren); ++i)
 	{
 		CatMessage * pMsg = getZRStaticQueueByIndex(pChildren, i);
 		if (isCatTransaction(pMsg))

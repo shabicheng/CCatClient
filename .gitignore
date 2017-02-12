@@ -33,7 +33,7 @@
 # Debug files
 *.dSYM/
 *.su
-
+*.d
 
 .vs
 

@@ -12,17 +12,17 @@ typedef struct _CatTranscation CatTransaction;
 typedef struct _CatTranscationInner
 {
 	ZRStaticQueue * m_children;
-	unsigned long long m_durationStart; // �߾���ʱ�䣬��ȷ�����룬�������GetTime64 * 1000 * 1000ʵ����
+	unsigned long long m_durationStart; // ¸ß¾«¶ÈÊ±¼ä£¬¾«È·µ½ÄÉÃë£¬Õâ±ßÏÈÓÃGetTime64 * 1000 * 1000ÊµÏÖ×Å
 	unsigned long long m_durationUs; 
 
-	// �����Ҫ��CatMessageInner�����ϸ�һ��
+	// Õâ±ßÐèÒªÓëCatMessageInner±£³ÖÑÏ¸ñÒ»ÖÂ
 	char m_msgType;
-	char m_unused[3]; //4�ֽڶ���
+	char m_unused[3]; //4×Ö½Ú¶ÔÆë
 	sds m_type;
 	sds m_name;
 	sds m_status;
 	sds m_data;
-	unsigned long long m_timeStamp; //ͳһ���壬sec*1000 + ms
+	unsigned long long m_timeStamp; //Í³Ò»º¬Òå£¬sec*1000 + ms
 	int m_completeFlag;
 	void(*setCompleteFlag)  (CatMessage* message, int completeFlag);
 	void *(*clear)   (CatMessage* message);
@@ -51,7 +51,7 @@ CatTransaction * copyCatTransaction(CatTransaction * pSrcTrans);
 
 unsigned long long getCatTranscationDurationUs(CatTransaction * trans);
 
-void inline setCatTranscationDurationUs(CatTransaction * trans, unsigned long long durationUs)
+static void inline setCatTranscationDurationUs(CatTransaction * trans, unsigned long long durationUs)
 {
     CatTransactionInner * pInner = getInnerTrans(trans);
     pInner->m_durationUs = durationUs;

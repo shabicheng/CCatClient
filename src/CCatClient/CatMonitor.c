@@ -6,7 +6,11 @@
 #include "TimeUtility.h"
 #include "CatHeartBeat.h"
 #include "CatServerConnManager.h"
+#include "CatClient.h"
 
+#include "CatMessageManager.h"
+
+extern CatMessageManager g_cat_messageManager;
 
 static volatile int g_cat_monitorStop = 0;
 
@@ -20,6 +24,15 @@ static DWORD WINAPI catMonitorFun(PVOID para)
 static void* catMonitorFun(void* para)
 #endif
 {
+    Sleep(1000);
+    CatTransaction * reboot = newTransaction("System", "Reboot");
+
+    reboot->setStatus((CatMessage *)reboot, CAT_SUCCESS);
+    logEvent("Reboot", g_cat_messageManager.m_ip, CAT_SUCCESS, NULL);
+    reboot->setComplete((CatMessage *)reboot);
+
+
+
     unsigned long runCount = 0;
     while (!g_cat_monitorStop)
     {
@@ -28,6 +41,18 @@ static void* catMonitorFun(void* para)
         {
             updateCatServerConn();
         }
+
+        if (runCount % 10 == 0)
+        {
+            CatTransaction * t = newTransaction("System", "Status");
+            CatHeartBeat * h = newHeartBeat("Heartbeat", g_cat_messageManager.m_ip);
+            h->addDataPair(h, "CPU=3.3GHz");
+            h->setStatus(h, CAT_SUCCESS);
+            h->setComplete((CatMessage *)h);
+            t->setStatus((CatMessage *)t, CAT_SUCCESS);
+            t->setComplete((CatMessage *)t);
+        }
+
         Sleep(1000);
     }
     return 0;

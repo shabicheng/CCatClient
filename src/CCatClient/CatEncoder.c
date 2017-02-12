@@ -2,6 +2,7 @@
 #include "CatMessageManager.h"
 #include "CLog.h"
 #include "CatTranscationHelper.h"
+#include "TimeUtility.h"
 
 #define POLICY_DEFAULT 0
 #define POLICY_WITHOUT_STATUS 1
@@ -11,8 +12,16 @@
 #define CAT_TAB '\t'
 #define CAT_EL '\n'
 
+
+
 extern CatMessageManager g_cat_messageManager;
 
+
+
+static inline sds sdscatwithnull(sds s, const char * buf)
+{
+    return sdscat(s, buf == NULL ? "null" : buf);
+}
 
 int catEncodeHeader(CatRootMessage * pRootMsg, sds * buf)
 {
@@ -20,27 +29,29 @@ int catEncodeHeader(CatRootMessage * pRootMsg, sds * buf)
     int count = sdslen(tmpBuf);
 
 
-    tmpBuf = sdscat(tmpBuf, CAT_ENCODE_VERSION);
+    tmpBuf = sdscatwithnull(tmpBuf, CAT_ENCODE_VERSION);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, g_cat_messageManager.m_domain);
+    tmpBuf = sdscatwithnull(tmpBuf, g_cat_messageManager.m_domain);
+    //tmpBuf = sdscatwithnull(tmpBuf, "cat");
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, g_cat_messageManager.m_hostname);
+    tmpBuf = sdscatwithnull(tmpBuf, g_cat_messageManager.m_hostname);
+    //tmpBuf = sdscatwithnull(tmpBuf, "ubunto");
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, g_cat_messageManager.m_ipX);
+    tmpBuf = sdscatwithnull(tmpBuf, g_cat_messageManager.m_ip);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_threadGroupName);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_threadGroupName);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_threadId);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_threadId);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_threadName);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_threadName);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_messageId);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_messageId);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_parentMessageId);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_parentMessageId);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_rootMessageId);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_rootMessageId);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pRootMsg->m_sessionToken);
+    tmpBuf = sdscatwithnull(tmpBuf, pRootMsg->m_sessionToken);
     tmpBuf = sdscatchar(tmpBuf, CAT_EL);
 
 
@@ -62,22 +73,22 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
     {
         unsigned long long durationMs = getCatTranscationDurationUs((CatTransaction *)pMsg) / 1000;
 
-        tmpBuf = sdscatprintf(tmpBuf, "%lld", getCatMessageTimeStamp(pMsg) + durationMs);
+        tmpBuf = sdscatprintf(tmpBuf, "%s", GetCatTimeString(getCatMessageTimeStamp(pMsg) + durationMs));
     }
     else 
     {
-        tmpBuf = sdscatprintf(tmpBuf, "%d", getCatMessageTimeStamp(pMsg));
+        tmpBuf = sdscatprintf(tmpBuf, "%s", GetCatTimeString(getCatMessageTimeStamp(pMsg)));
     }
 
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pMsgInner->m_type);
+    tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_type);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
-    tmpBuf = sdscat(tmpBuf, pMsgInner->m_name);
+    tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_name);
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
 
     if (policy != POLICY_WITHOUT_STATUS)
     {
-        tmpBuf = sdscat(tmpBuf, pMsgInner->m_status);
+        tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_status);
         tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
 
 
@@ -87,7 +98,7 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
             tmpBuf = sdscatprintf(tmpBuf, "%lldus\t", durationUs);
         }
 
-        tmpBuf = sdscat(tmpBuf, pMsgInner->m_data);
+        tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_data);
         tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
     }
 
@@ -121,8 +132,8 @@ int catEncodeBody(CatMessage * pMsg, sds * buf)
             size_t len = getZRStaticStackSize(children);
 
             count += catEncodeLine(pMsg, buf, 't', POLICY_WITHOUT_STATUS);
-
-            for (size_t i = 0; i < len; i++) 
+			size_t i = 0;
+            for (; i < len; i++) 
             {
                 CatMessage * child = getZRStaticStackByIndex(children, i);
 
@@ -168,7 +179,6 @@ sds catEncodeMessage(CatRootMessage * pRootMsg, sds buf)
 {
     int count = 0;
     buf = sdscatlen(buf, "0000", 4);
-    count += 4;
 
     count += catEncodeHeader(pRootMsg, &buf);
 
@@ -181,6 +191,8 @@ sds catEncodeMessage(CatRootMessage * pRootMsg, sds buf)
     buf[1] = (count >> 16) & 0xFF;
     buf[2] = (count >> 8) & 0xFF;
     buf[3] = (count) & 0xFF;
+
+
 
     return buf;
 }

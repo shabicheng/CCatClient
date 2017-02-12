@@ -84,12 +84,13 @@ static void anetSetError(char *err, const char *fmt, ...)
     if (!err) return;
     va_start(ap, fmt);
     vsnprintf(err, ANET_ERR_LEN, fmt, ap);
+	vprintf(fmt, ap);
     va_end(ap);
 }
 
 int anetSetBlock(char *err, int fd, int non_block) {
 
-    //设置为非阻塞模式
+    //脡猫脰脙脦陋路脟脳猫脠没脛拢脢陆
 #ifdef WIN32
     unsigned long mode = non_block;
     if (ioctlsocket(fd, FIONBIO, &mode) < 0)
@@ -246,7 +247,7 @@ int anetSendTimeout(char *err, int fd, long long ms) {
 int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
                        int flags, int hexFlag)
 {
-    // 没填入host为获取本机地址
+    // 脙禄脤卯脠毛host脦陋禄帽脠隆卤戮禄煤碌脴脰路
     char hostname[255];
     if (host == NULL)
     {
@@ -318,7 +319,8 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
         else
         {
             unsigned char * ipValueS = (unsigned char *)(&sa->sin_addr.s_addr);
-            for (int i = 0; i < 4; ++i)
+			int i = 0;
+            for (; i < 4; ++i)
             {
                 if (ipValueS[i] > 16)
                 {
@@ -516,7 +518,7 @@ int anetWrite(int fd, char *buf, int count)
 #else
         nwritten = write(fd, buf, count - totlen);
 #endif
-        if (nwritten == 0) return totlen;
+        //if (nwritten == 0) return totlen;
         if (nwritten == -1) return -1;
         totlen += nwritten;
         buf += nwritten;
@@ -717,7 +719,7 @@ int anetClose(int fd)
 #ifdef WIN32
     return closesocket(fd);
 #else
-    close(sockfd);
+    close(fd);
 #endif
     return 1;
 }

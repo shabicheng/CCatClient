@@ -8,7 +8,7 @@
 #define inline __inline
 #endif
 
-// ¹Ì¶¨³¤¶È£¬²åÈëÎÞ×èÈûÐÍ¶ÓÁÐ
+// Â¹ÃŒÂ¶Â¨Â³Â¤Â¶ÃˆÂ£Â¬Â²Ã¥ÃˆÃ«ÃŽÃžÃ—Ã¨ÃˆÃ»ÃÃÂ¶Ã“ÃÃ
 typedef struct _ZRSafeQueue
 {
     ZRStaticQueue * queue;
@@ -36,16 +36,16 @@ void clearZRSafeQueue(ZRSafeQueue * pQueue);
 
 void destroyZRSafeQueue(ZRSafeQueue * pQueue);
 
-// ÏÂÃæÕâÐ©¼ÓËøÒ²Ã»É¶ÓÃ£¬¸É´à²»¼Ó
-inline size_t getZRSafeQueueSize(ZRSafeQueue * pQueue)
+// ÃÃ‚ÃƒÃ¦Ã•Ã¢ÃÂ©Â¼Ã“Ã‹Ã¸Ã’Â²ÃƒÂ»Ã‰Â¶Ã“ÃƒÂ£Â¬Â¸Ã‰Â´Ã Â²Â»Â¼Ã“
+static inline size_t getZRSafeQueueSize(ZRSafeQueue * pQueue)
 {
 	return getZRStaticQueueSize(pQueue->queue);
 }
-inline int isZRSafeQueueEmpty(ZRSafeQueue * pQueue)
+static inline int isZRSafeQueueEmpty(ZRSafeQueue * pQueue)
 {
 	return isZRStaticQueueEmpty(pQueue->queue);
 }
-inline int isZRSafeQueueFull(ZRSafeQueue * pQueue)
+static inline int isZRSafeQueueFull(ZRSafeQueue * pQueue)
 {
 	return isZRStaticQueueFull(pQueue->queue);
 }
