@@ -13,14 +13,15 @@ static void setTraceComplete(CatMessage * message)
 
 CatTrace * createCatTrace(const char *type, const char * name)
 {
-	CatTrace * pTrace = malloc(sizeof(CatTrace) + sizeof(CatMessageInner));
-	if (pTrace == NULL)
+	CatMessageInner * pTraceInner = malloc(sizeof(CatTrace) + sizeof(CatMessageInner));
+	if (pTraceInner == NULL)
 	{
 		return NULL;
 	}
+	CatTrace * pTrace = (CatTrace *)((char *)pTraceInner + sizeof(CatMessageInner));
 	initCatMessage(pTrace, CatMessageType_Trace, type, name);
 
-	// ÉèÖÃ
+	// è®¾ç½®
 	// 
 	pTrace->setComplete = setTraceComplete;
 	return pTrace;

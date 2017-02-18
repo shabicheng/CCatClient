@@ -89,17 +89,7 @@ void clearCatMonitor()
     }
     CloseHandle(g_cat_monitorHandle);
 #else
-    struct timespec ts;
-    if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
-    {
-        /* Handle error */
-    }
-
-    ts.tv_sec += 1;
-    if (pthread_timedjoin_np(g_cat_monitorHandle, NULL, &ts) != 0)
-    {
-        pthread_cancel(g_cat_monitorHandle);
-    }
+    pthread_join(g_cat_monitorHandle, NULL);
 #endif // _WIN32
 }
 

@@ -54,16 +54,17 @@ void catMessageManagerInitialize(const char * domain, const char * hostName)
 
     g_cat_messageManager.m_hostname = sdsnew(hostName);
     catChecktPtr(g_cat_messageManager.m_hostname);
-    // @todo for wyp
-    // ip地址好像是16进制的?
+
     g_cat_messageManager.m_ip = sdsnewEmpty(64);
     catChecktPtr(g_cat_messageManager.m_ip);
     anetResolveIP(NULL, NULL, g_cat_messageManager.m_ip, 64);
-	
+    char * defaultIp = "192.168.110.161";
+    char * defaultIpHex = "c0a86ea1";
 	// @todo for wyp, cannot find self ip in ubuntu
 	if (g_cat_messageManager.m_ip[0] == '\0')
 	{
-		sdscpy(g_cat_messageManager.m_ip, "192.168.110.161");
+        INNER_LOG(CLOG_WARNING, "Cannot get self ip address, use default ip: %s", defaultIp);
+        sdscpy(g_cat_messageManager.m_ip, defaultIp);
 	}
 
     g_cat_messageManager.m_ipX = sdsnewEmpty(64);
@@ -72,8 +73,9 @@ void catMessageManagerInitialize(const char * domain, const char * hostName)
 	
 	// @todo for wyp, cannot find self ip in ubuntu
 	if (g_cat_messageManager.m_ipX[0] == '\0')
-	{
-		sdscpy(g_cat_messageManager.m_ipX, "c0a86ea1");
+    {
+        INNER_LOG(CLOG_WARNING, "Cannot get self ip address, use default ip hex: %s", defaultIpHex);
+        sdscpy(g_cat_messageManager.m_ipX, defaultIpHex);
 	}
 
 

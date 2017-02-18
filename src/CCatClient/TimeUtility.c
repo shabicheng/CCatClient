@@ -10,20 +10,20 @@
 
 char * GetTimeString(u_int64 srcTime)
 {
-    //tmÊý¾Ý½á¹¹½âÊÍ
+    //tm数据结构解释
     //struct tm 
     //{
-    //	int tm_sec; /* Ãë¨CÈ¡ÖµÇø¼äÎª[0,59] */
-    //	int tm_min; /* ·Ö - È¡ÖµÇø¼äÎª[0,59] */
-    //	int tm_hour; /* Ê± - È¡ÖµÇø¼äÎª[0,23] */
-    //	int tm_mday; /* Ò»¸öÔÂÖÐµÄÈÕÆÚ - È¡ÖµÇø¼äÎª[1,31] */
-    //	int tm_mon; /* ÔÂ·Ý£¨´ÓÒ»ÔÂ¿ªÊ¼£¬0´ú±íÒ»ÔÂ£© - È¡ÖµÇø¼äÎª[0,11] */
-    //	int tm_year; /* Äê·Ý£¬ÆäÖµ´Ó1900¿ªÊ¼ */
-    //	int tm_wday; /* ÐÇÆÚ¨CÈ¡ÖµÇø¼äÎª[0,6]£¬ÆäÖÐ0´ú±íÐÇÆÚÌì£¬1´ú±íÐÇÆÚÒ»£¬ÒÔ´ËÀàÍÆ */
-    //	int tm_yday; /* ´ÓÃ¿ÄêµÄ1ÔÂ1ÈÕ¿ªÊ¼µÄÌìÊý¨CÈ¡ÖµÇø¼äÎª[0,365]£¬ÆäÖÐ0´ú±í1ÔÂ1ÈÕ£¬1´ú±í1ÔÂ2ÈÕ£¬ÒÔ´ËÀàÍÆ */
-    //	int tm_isdst; /* ÏÄÁîÊ±±êÊ¶·û£¬ÊµÐÐÏÄÁîÊ±µÄÊ±ºò£¬tm_isdstÎªÕý¡£²»ÊµÐÐÏÄÁîÊ±µÄ½øºò£¬tm_isdstÎª0£»²»ÁË½âÇé¿öÊ±£¬tm_isdst()Îª¸º¡£*/
-    //	long int tm_gmtoff; /*Ö¸¶¨ÁËÈÕÆÚ±ä¸üÏß¶«ÃæÊ±ÇøÖÐUTC¶«²¿Ê±ÇøÕýÃëÊý»òUTCÎ÷²¿Ê±ÇøµÄ¸ºÃëÊý*/
-    //	const char *tm_zone; /*µ±Ç°Ê±ÇøµÄÃû×Ö(Óë»·¾³±äÁ¿TZÓÐ¹Ø)*/
+    //	int tm_sec; /* 秒–取值区间为[0,59] */
+    //	int tm_min; /* 分 - 取值区间为[0,59] */
+    //	int tm_hour; /* 时 - 取值区间为[0,23] */
+    //	int tm_mday; /* 一个月中的日期 - 取值区间为[1,31] */
+    //	int tm_mon; /* 月份（从一月开始，0代表一月） - 取值区间为[0,11] */
+    //	int tm_year; /* 年份，其值从1900开始 */
+    //	int tm_wday; /* 星期–取值区间为[0,6]，其中0代表星期天，1代表星期一，以此类推 */
+    //	int tm_yday; /* 从每年的1月1日开始的天数–取值区间为[0,365]，其中0代表1月1日，1代表1月2日，以此类推 */
+    //	int tm_isdst; /* 夏令时标识符，实行夏令时的时候，tm_isdst为正。不实行夏令时的进候，tm_isdst为0；不了解情况时，tm_isdst()为负。*/
+    //	long int tm_gmtoff; /*指定了日期变更线东面时区中UTC东部时区正秒数或UTC西部时区的负秒数*/
+    //	const char *tm_zone; /*当前时区的名字(与环境变量TZ有关)*/
     //};
 
     time_t t = 0;
@@ -64,22 +64,18 @@ char * GetDetailTimeString(u_int64 srcTime)
         timeBuf.millitm = srcTime % 1000;
     }
 #elif defined(__linux__)
-    // @add by Tim at 2015-08-18 10:15:29
-    struct timespec ts;
+
+    struct timeval tv;
+
     if (srcTime == 0)
     {
-        t = time(0);
-        if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
-        {
-            return NULL;
-        }
+        gettimeofday(&tv, NULL);
     }
     else
     {
         t = srcTime / 1000;
-        ts.tv_nsec = (srcTime % 1000) * 1000000;
+        tv.tv_usec = (srcTime % 1000) * 1000;
     }
-    // @add end
 #endif
     static THREADLOCAL char * tmp = NULL;
     if (tmp == NULL)
@@ -95,7 +91,7 @@ char * GetDetailTimeString(u_int64 srcTime)
     sprintf_s(tmp + timeBufLen, 128 - timeBufLen, "-%03d", timeBuf.millitm);
 #else
     // @add by Tim at 2015-08-18 10:34:39
-    snprintf(tmp + timeBufLen, sizeof(tmp) - timeBufLen, "-%03d", (int)(ts.tv_nsec / 1000000));
+    snprintf(tmp + timeBufLen, sizeof(tmp) - timeBufLen, "-%03d", (int)(tv.tv_usec / 1000));
     // @add end
 #endif
     return tmp;
@@ -117,22 +113,18 @@ char * GetCatTimeString(u_int64 srcTime)
         timeBuf.millitm = srcTime % 1000;
     }
 #elif defined(__linux__)
-    // @add by Tim at 2015-08-18 10:15:29
-    struct timespec ts;
+
+    struct timeval tv;
+
     if (srcTime == 0)
     {
-        t = time(0);
-        if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
-        {
-            return NULL;
-        }
+        gettimeofday(&tv, NULL);
     }
     else
     {
         t = srcTime / 1000;
-        ts.tv_nsec = (srcTime % 1000) * 1000000;
+        tv.tv_usec = (srcTime % 1000) * 1000;
     }
-    // @add end
 #endif
     static THREADLOCAL char * tmp = NULL;
     if (tmp == NULL)
@@ -148,7 +140,7 @@ char * GetCatTimeString(u_int64 srcTime)
     sprintf_s(tmp + timeBufLen, 128 - timeBufLen, ".%03d", timeBuf.millitm);
 #else
     // @add by Tim at 2015-08-18 10:34:39
-    snprintf(tmp + timeBufLen, sizeof(tmp) - timeBufLen, "-%03d", (int)(ts.tv_nsec / 1000000));
+    snprintf(tmp + timeBufLen, sizeof(tmp) - timeBufLen, ".%03d", (int)(tv.tv_usec / 1000));
     // @add end
 #endif
     return tmp;

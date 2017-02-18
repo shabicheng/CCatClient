@@ -8,7 +8,7 @@
 #define inline __inline
 #endif
 
-// ¹Ì¶¨³¤¶È£¬²åÈëÎÞ×èÈûÐÍ¶ÓÁÐ
+// 固定长度，插入无阻塞型队列
 typedef struct _ZRSafeQueue
 {
     ZRStaticQueue * queue;
@@ -36,7 +36,7 @@ void clearZRSafeQueue(ZRSafeQueue * pQueue);
 
 void destroyZRSafeQueue(ZRSafeQueue * pQueue);
 
-// ÏÂÃæÕâÐ©¼ÓËøÒ²Ã»É¶ÓÃ£¬¸É´à²»¼Ó
+// 下面这些加锁也没啥用，干脆不加
 static inline size_t getZRSafeQueueSize(ZRSafeQueue * pQueue)
 {
 	return getZRStaticQueueSize(pQueue->queue);

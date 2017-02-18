@@ -1,1 +1,1 @@
-./Release/CCatClientTest_CatTestMain.cpp.o
+./Debug/CCatClientTest_CatTestMain.cpp.o

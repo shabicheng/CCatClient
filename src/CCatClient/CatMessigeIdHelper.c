@@ -96,7 +96,9 @@ sds getNextMessageId()
         save();
     }
     sds msgIdStr = sdsnewEmpty(128);
-    return sdscatprintf(msgIdStr, "%s%d", g_id_prefix, g_id_index);
+    msgIdStr = sdscatprintf(msgIdStr, "%s%d", g_id_prefix, g_id_index);
+//    printf("msgid: %s \n", msgIdStr);
+    return msgIdStr;
 }
 
 void reuseMessageId(sds msgId)

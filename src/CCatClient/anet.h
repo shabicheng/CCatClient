@@ -51,7 +51,7 @@ int anetTcpConnect(char *err, char *addr, int port);
 int anetTcpNonBlockConnect(char *err, char *addr, int port);
 int anetUnixConnect(char *err, char *path);
 int anetUnixNonBlockConnect(char *err, char *path);
-int anetRead(int fd, char *buf, int count);
+int anetGetHost(char *err, char *host, size_t ipbuf_len);
 int anetResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len);
 int anetResolveIP(char *err, char *host, char *ipbuf, size_t ipbuf_len);
 int anetResolveIPHex(char *err, char *host, char *ipbuf, size_t ipbuf_len);
@@ -62,7 +62,15 @@ int anetUnixServer(char *err, char *path, mode_t perm, int backlog);
 #endif
 int anetTcpAccept(char *err, int serversock, char *ip, size_t ip_len, int *port);
 int anetUnixAccept(char *err, int serversock);
-int anetWrite(int fd, char *buf, int count);
+int anetBlockRead(int fd, char *buf, int count);
+int anetBlockWrite(int fd, char *buf, int count);
+int anetBlockReadTime(int fd, char *buf, int count, int waitMs);
+int anetBlockWriteTime(int fd, char *buf, int count, int waitMs);
+
+
+int anetNoBlockRead(int fd, char *buf, int count);
+int anetNoBlockWrite(int fd, char *buf, int count);
+
 int anetNonBlock(char *err, int fd);
 int anetBlock(char *err, int fd);
 int anetEnableTcpNoDelay(char *err, int fd);

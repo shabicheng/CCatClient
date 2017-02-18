@@ -36,6 +36,11 @@ extern "C"
     CATCLIENT_EXPORT void logTraceWithCodeLocation(const char * type, const char * name, const char * status,
         const char * nameValuePairs, const char * fileName, const char * funcationName, int lineNo);
 
+#define logErrorTrace(type, name, data) logErrorWithCodeLocation((type), (name), (data), \
+    __FILE__, __FUNCTION__, __LINE__)
+    CATCLIENT_EXPORT void logErrorWithCodeLocation(const char * type, const char * name,
+                                                   const char * data, const char * fileName, const char * funcationName, int lineNo);
+
     CATCLIENT_EXPORT CatEvent *  newEvent(const char * type, const char * name);
     CATCLIENT_EXPORT CatTrace * newTrace(const char * type, const char * name);
     CATCLIENT_EXPORT CatMetric * newMetric(const char * type, const char * name);

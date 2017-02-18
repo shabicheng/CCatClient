@@ -10,7 +10,7 @@
 
 static void migrateMessage(ZRStaticStack * pStack, CatTransaction * source, CatTransaction * target, size_t level)
 {
-    // ÄÃµ½ÏÂÒ»¼¶µÄtrans
+    // 拿到下一级的trans
     CatTransaction * current = level < getZRStaticStackSize(pStack) ? (CatTransaction *)getZRStaticStackByIndex(pStack, level) : NULL;
     int shouldKeep = 0;
     CatTransactionInner * currentInner = getInnerTrans(current);
@@ -58,16 +58,16 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
     {
         return;
     }
-    // ×¢Òâ£¬Õâ¸öidÊÇ´ÓpRootMsgÄÃ³öÀ´µÄ£¬¼°Ê±ÎªNULL£¬×îÖÕÒ²»á³õÊ¼»¯²¢ÉèÖÃµ½pRootMsgÉÏ
+    // 注意，这个id是从pRootMsg拿出来的，及时为NULL，最终也会初始化并设置到pRootMsg上
     sds id = pRootMsg->m_messageId;
 
     if (id == NULL) {
         id = getNextMessageId();
         pRootMsg->m_messageId = id;
     }
-    // ×¢Òâ£¬Õâ¸öidÊÇ´ÓpRootMsgÄÃ³öÀ´µÄ
+    // 注意，这个id是从pRootMsg拿出来的
     sds rootId = pRootMsg->m_rootMessageId;
-    // ×¢Òâ£¬Õâ¸öidÊÇÉú³É³öÀ´µÄ
+    // 注意，这个id是生成出来的
     sds childId = getNextMessageId();
 
     CatTransaction * source = (CatTransaction *)message;
@@ -80,7 +80,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 
     migrateMessage(pStack, source, target, 1);
 
-	size_t i;
+	int i;
 	i = getZRStaticQueueSize(pStack) - 1;
     for (; i >= 0; --i) 
     {
@@ -103,7 +103,7 @@ void truncateAndFlush(CatContext * context, unsigned long long timestampMs)
 
     pCp->m_rootMsg = (CatMessage *)target;
 
-    // ×¢Òâ£¬childId ÊÇnew³öÀ´µÄ id rootId ±¾Éí¾ÍÊÇpRootMsg£¬ËùÒÔ²»ÐèÒªÔÙ´Îsdsdup³öÀ´
+    // 注意，childId 是new出来的 id rootId 本身就是pRootMsg，所以不需要再次sdsdup出来
     pRootMsg->m_messageId = childId;
     pRootMsg->m_parentMessageId = id;
     pRootMsg->m_rootMessageId = (rootId != NULL ? rootId : sdsdup(id));

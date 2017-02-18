@@ -23,6 +23,12 @@ static inline sds sdscatwithnull(sds s, const char * buf)
     return sdscat(s, buf == NULL ? "null" : buf);
 }
 
+
+static inline sds sdscatwithdefault(sds s, const char * buf, const char * defaultStr)
+{
+    return sdscat(s, buf == NULL ? defaultStr : buf);
+}
+
 int catEncodeHeader(CatRootMessage * pRootMsg, sds * buf)
 {
     sds tmpBuf = *buf;
@@ -79,6 +85,7 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
     {
         tmpBuf = sdscatprintf(tmpBuf, "%s", GetCatTimeString(getCatMessageTimeStamp(pMsg)));
     }
+    //printf("Now Time %s\n", GetCatTimeString(getCatMessageTimeStamp(pMsg)));
 
     tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
     tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_type);
@@ -88,7 +95,8 @@ int catEncodeLine(CatMessage * pMsg, sds * buf, char type, int policy)
 
     if (policy != POLICY_WITHOUT_STATUS)
     {
-        tmpBuf = sdscatwithnull(tmpBuf, pMsgInner->m_status);
+        // if status is null, set status to "DefaultStatus"
+        tmpBuf = sdscatwithdefault(tmpBuf, pMsgInner->m_status, "DefaultStatus");
         tmpBuf = sdscatchar(tmpBuf, CAT_TAB);
 
 

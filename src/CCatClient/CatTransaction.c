@@ -40,11 +40,11 @@ static void setTransactionComplete(CatTransaction * message)
     // complete() was called more than once
     if (pInner->m_completeFlag)
     {
-        CatEvent * evt = createCatEvent("cat", "BadInstrument");
-
-        evt->setStatus(evt, "TransactionAlreadyCompleted");
-        evt->setComplete(evt);
-        addChild(message, evt);
+//        CatEvent * evt = createCatEvent("cat", "BadInstrument");
+//
+//        evt->setStatus(evt, "TransactionAlreadyCompleted");
+//        evt->setComplete(evt);
+//        addChild(message, evt);
     }
     else
     {
@@ -71,7 +71,7 @@ CatTransaction * createCatTransaction(const char *type, const char * name)
     initCatMessage((CatMessage*)pTrans, CatMessageType_Trans, type, name);
     pTransInner->m_children = createZRStaticQueue(g_config.maxChildSize);
     pTransInner->m_durationStart = GetTime64() * 1000 * 1000;
-    // ÉèÖÃ
+    // 设置
     // 
     pTrans->setComplete = setTransactionComplete;
     pTrans->addChild = addChild;

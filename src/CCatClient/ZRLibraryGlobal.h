@@ -4,7 +4,7 @@
 #ifndef _ZHENRONG_COMMON_
 #define _ZHENRONG_COMMON_
 
-//ÒÔÏÂÎªÒýÓÃµÄ²Ù×÷ÏµÍ³Í·ÎÄ¼þ
+//以下为引用的操作系统头文件
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,7 +95,7 @@ typedef int socklen_t;
 
 
 /**********************************************************************************************//**
-* @brief   ÅÐ¶Ï±¾»úÊÇ·ñÎª´óÐ¡¶Ë.
+* @brief   判断本机是否为大小端.
 *
 * @return	The local little endian.
 **************************************************************************************************/
@@ -130,8 +130,8 @@ typedef long long int64;
 typedef int SOCKET;
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
-#define __in   // ±íÊ¾¸Ã²ÎÊýÓÃÓÚÊäÈë
-#define __out  // ±íÊ¾¸Ã²ÎÊýÓÃÓÚÊä³öÖµ
+#define __in   // 表示该参数用于输入
+#define __out  // 表示该参数用于输出值
 #define closesocket close
 #define stricmp strcasecmp
 typedef int BOOL;
@@ -150,23 +150,23 @@ typedef int BOOL;
 
 #define NETEWOULDBLOCK EWOULDBLOCK
 
-// »ñÈ¡´íÎóºÅ
+// 获取错误号
 
 #define NetGetLastError() (errno)
 #define GetLastError() (errno)
 
 // 
-// // »ñÈ¡ipµØÖ·
-// // ÓÐÇÒ½öÓÐÔò·µ»Ø127.0.0.1
-// // ·µ»Ø×îºóÒ»¸ö²»ÊÇ127.0.0.1µÄip
-// // Èç¹ûÅäÖÃipÔÚµØÖ·±í,Ôò·µ»ØÅäÖÃip
+// // 获取ip地址
+// // 有且仅有则返回127.0.0.1
+// // 返回最后一个不是127.0.0.1的ip
+// // 如果配置ip在地址表,则返回配置ip
 // inline bool NetGetLocalIP(char *ip, const char *configIP = NULL)
 // {
 // 	struct ifaddrs * ifAddrStruct = NULL;
-// 	getifaddrs(&ifAddrStruct); // »ñÈ¡µØÖ·ÁÐ±í
+// 	getifaddrs(&ifAddrStruct); // 获取地址列表
 // 
 // 	bool isFind = false, isSave = false;
-// 	strcpy(ip, "127.0.0.1"); // ÎÞÍø¿¨
+// 	strcpy(ip, "127.0.0.1"); // 无网卡
 // 
 // 	while (ifAddrStruct != NULL)
 // 	{
@@ -174,7 +174,7 @@ typedef int BOOL;
 // 		{
 // 			void *tmpAddrPtr = NULL;
 // 			// is a valid IP4 Address
-// 			if (!strcmp(ifAddrStruct->ifa_name, "lo")) // ÊÇ127.0.0.1 ¼ÌÐø±È¶Ô
+// 			if (!strcmp(ifAddrStruct->ifa_name, "lo")) // 是127.0.0.1 继续比对
 // 			{
 // 				tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
 // 				inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
@@ -186,9 +186,9 @@ typedef int BOOL;
 // 
 // 			tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
 // 			inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
-// 			isFind = true; // ÕÒµ½ÁË·Ç127.0.0.1µÄip
+// 			isFind = true; // 找到了非127.0.0.1的ip
 // 
-// 			if (configIP != NULL) // ÅäÖÃÁËipµØÖ·Ôò±È½Ï
+// 			if (configIP != NULL) // 配置了ip地址则比较
 // 			{
 // 				isFind = false;
 // 				while (ifAddrStruct != NULL)
@@ -217,9 +217,9 @@ typedef int BOOL;
 #endif
 
 /**********************************************************************************************//**
-* ÎªÁËÒþ²Ø½Ó¿ÚÀàµÄÊµÏÖ¶øÌá¹©µÄÒ»×éºê¶¨Òå£¬Ä¿µÄÊÇ±ÜÃâÔÚÍ·ÎÄ¼þÖÐ±©Â¶¹ý¶àÏ¸½Ú»ò¹ý¶àÒÀÀµÏî
-* ±¾ÖÊÉÏÊÇ½«ÀàµÄÊµÏÖ·ÅÔÚÆäPrivateÀàÖÐ£¬PrivateÀà¶¨ÒåÔÚcppÖÐ
-* ¾ßÌåÊ¹ÓÃ·½·¨²Î¼ûZRLibraryTestÖÐµÄCommonIncludeTest.hºÍCommonIncludeTest.cpp
+* 为了隐藏接口类的实现而提供的一组宏定义，目的是避免在头文件中暴露过多细节或过多依赖项
+* 本质上是将类的实现放在其Private类中，Private类定义在cpp中
+* 具体使用方法参见ZRLibraryTest中的CommonIncludeTest.h和CommonIncludeTest.cpp
 *
 * @author	ZRZC
 * @date	2016/6/2
@@ -251,7 +251,7 @@ typedef int BOOL;
 #define ZR_Q(Class) Class * const q = q_func()
 
 /*
-Ðè×¢Òâ£¬Ò»¶¨Òª·ÅÔÚprivateÉùÃ÷ÏÂ
+需注意，一定要放在private声明下
 Some classes do not permit copies to be made of an object. These
 classes contains a private copy constructor and assignment
 operator to disable copying (the compiler gives an error message).
@@ -264,15 +264,15 @@ operator to disable copying (the compiler gives an error message).
 
 #ifdef WIN32
 #define snprintf sprintf_s
-// WIN32ÌØÊâÓÃ·¨WStringÓëÆÕÍ¨stringµÄ»¥Ïà×ª»»
-//ÓÃÍêÖ®ºódelete
+// WIN32特殊用法WString与普通string的互相转换
+//用完之后delete
 /// *************************************************************************************************
 /// * @fn       CstrToWstr
-/// * @brief    ½«ÆÕÍ¨µÄstring×ª»»Îª¶à×Ö½Ú×Ö·û´®£¬×Ö·û´®Ê¹ÓÃnew·ÖÅä³öÀ´
+/// * @brief    将普通的string转换为多字节字符串，字符串使用new分配出来
 /// * @param    cstr  The CSTR.
 /// * @returns    wchar_t *.
 /// * 
-/// * @details  ÓÃ»§ÐèÒªÊÖ¶¯deleteµô·µ»ØµÄÖ¸Õë
+/// * @details  用户需要手动delete掉返回的指针
 /// * 
 /// * @todo     
 /// * 
@@ -285,13 +285,13 @@ operator to disable copying (the compiler gives an error message).
 // 	size_t size = cstr.length();
 // 	wchar_t *buffer = new wchar_t[size + 1];
 // 	MultiByteToWideChar(CP_ACP, 0, cstr.c_str(), (int)size, buffer, (int)size * sizeof(wchar_t));
-// 	buffer[size] = 0;  // È·±£ÒÔ '\0' ½áÎ²
+// 	buffer[size] = 0;  // 确保以 '\0' 结尾
 // 	return buffer;
 // }
 // 
 // /// *************************************************************************************************
 // /// * @fn       WstrToCstr
-// /// * @brief    ½«¶à×Ö½Ú×Ö·û´®×ª»»Îªstring
+// /// * @brief    将多字节字符串转换为string
 // /// * @param    lpcwszStr  The LPCWSZ string.
 // /// * @returns    string.
 // /// * 

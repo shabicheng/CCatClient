@@ -6,6 +6,7 @@
 #include "TimeUtility.h"
 #include "anet.h"
 #include "CatServerConnManager.h"
+#include "ae.h"
 
 static ZRSafeQueue * g_cat_bufferQueue = NULL;
 static volatile int g_cat_senderStop = 0;
@@ -17,6 +18,8 @@ static sds g_cat_mergeBuf = NULL;
 volatile int g_cat_send_fd = -1;
 volatile char g_cat_send_ip[64] = {0};
 volatile unsigned short g_cat_send_port = 0;
+volatile unsigned long long g_cat_send_blockTimes = 0;
+volatile int g_cat_send_failedFlag = 0;
 
 #define  CAT_MERGEBUF_COUNT 16
 #define  CAT_MERGEBUF_SIZE (60 * 1024)
@@ -38,12 +41,18 @@ int isCatSenderEnable()
 
 int sendCatMessageBuffer(sds sendBuf)
 {
+    int sendTotalLen = sdslen(sendBuf);
     catChecktPtr(sendBuf);
     sds newBuf = sdsdup(sendBuf);
     catChecktPtr(newBuf);
     if (pushBackZRSafeQueue(g_cat_bufferQueue, newBuf) == ZRSAFEQUEUE_OK)
     {
         return 1;
+    }
+    ++g_cat_send_blockTimes;
+    if (g_cat_send_blockTimes == 1 || g_cat_send_blockTimes % 1000 == 0)
+    {
+        INNER_LOG(CLOG_WARNING, "Server :  %s is blocking.", g_cat_send_ip);
     }
     sdsfree(newBuf);
     return 0;
@@ -53,16 +62,85 @@ int sendCatMessageBufferDirectly(sds sendBuf)
 {
     // @debug
     //return 1;
-    // µ÷ÓÃsocketÖ±½Ó·¢ËÍÁË
+    if (g_cat_send_failedFlag)
+    {
+        return -1;
+    }
 	
-	
-	//printf("SendBufLen %d\n", sdslen(sendBuf));
-	//printf("SendBufLen %lld\n", sdslen(sendBuf));
-	
-    if (anetWrite(g_cat_send_fd, sendBuf, sdslen(sendBuf)) < 0)
+    if (g_cat_send_fd < 0)
     {
         INNER_LOG(CLOG_WARNING, "Ïò·þÎñÆ÷ip: %s ·¢ËÍÐÅÏ¢Ê§°Ü, ¿ªÊ¼³¢ÊÔ»Ö¸´Á¬½Ó.", g_cat_send_ip);
         recoverCatServerConn();
+        if (g_cat_send_fd < 0)
+        {
+            return -1;
+        }
+    }
+	
+
+    static int s_count = 0;
+
+    printf("SendBufLen %d %d\n", sdslen(sendBuf), ++s_count);
+        
+    int sendTotalLen = sdslen(sendBuf);
+    char * buf = sendBuf;
+    int nowSendLen = 0;
+    int sendLen = 0;
+    while (nowSendLen != sendTotalLen)
+    {
+        // to promote performance, do not call fun anetNoBlockWrite, use socket directly
+        //sendLen = anetNoBlockWrite(g_cat_send_fd, sendBuf, sendLen);
+#ifdef WIN32
+        sendLen = send(g_cat_send_fd, buf, sendTotalLen - nowSendLen, 0);
+#else
+        sendLen = write(g_cat_send_fd, buf, sendTotalLen - nowSendLen);
+#endif
+        //if (nwritten == 0) return totlen;
+
+        if (sendLen == -1)
+        {
+
+#ifdef WIN32
+            if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+            if (errno == EAGAIN)
+#endif
+            {
+                sendLen = 0;
+                ++g_cat_send_blockTimes;
+                if (g_cat_send_blockTimes == 1 || g_cat_send_blockTimes % 10000 == 0)
+                {
+                    INNER_LOG(CLOG_WARNING, "Server :  %s is blocking.", g_cat_send_ip);
+                }
+
+                aeWait(g_cat_send_fd, AE_WRITABLE, 10);
+            }
+            else
+            {
+                INNER_LOG(CLOG_WARNING, "Send to server :  %s  failed.", g_cat_send_ip);
+                nowSendLen = -1;
+                break;
+            }
+        }
+        nowSendLen += sendLen;
+        buf += sendLen;
+    }
+    
+    
+
+    if (nowSendLen < 0)
+    {
+        INNER_LOG(CLOG_WARNING, "Ïò·þÎñÆ÷ip: %s ·¢ËÍÐÅÏ¢Ê§°Ü, ¿ªÊ¼³¢ÊÔ»Ö¸´Á¬½Ó.", g_cat_send_ip);
+        recoverCatServerConn();
+
+        if (g_cat_send_fd < 0)
+        {
+            INNER_LOG(CLOG_ERROR, "Recover failed.");
+        }
+    }
+    else
+    {
+
     }
 
     // @debug
@@ -90,7 +168,7 @@ static void* catMessageSenderFun(void* para)
     while (!g_cat_senderStop)
     {
         int eleNum = popFrontManyZRSafeQueue(g_cat_bufferQueue, sendBufArray, 16, 100);
-        // Õâ±ßÆäÊµ¿ÉÒÔºÏ°üÀ´·¢£¬ÊµÏÖ²ßÂÔÊÇ»ñÈ¡Ò»ÏµÁÐµÄ
+        // 这边其实可以合包来发，实现策略是获取一系列的
         if (eleNum > 0)
         {
             if (eleNum > 1)
@@ -101,12 +179,12 @@ static void* catMessageSenderFun(void* para)
                 {
                     while (nowEle < eleNum && sdslen(g_cat_mergeBuf) < CAT_MERGEBUF_SIZE)
                     {
-                        // ÄÚ²¿Æ´½Ó
+                        // 内部拼接
                         g_cat_mergeBuf = sdscat(g_cat_mergeBuf, sendBufArray[nowEle]);
                         sdsfree(sendBufArray[nowEle]);
                         ++nowEle;
                     }
-                    // Æ´½ÓÍêÁË·¢ËÍ³öÈ¥£¬Õâ¸öbuf²»ÐèÒªÊÍ·Å
+                    // 拼接完了发送出去，这个buf不需要释放
                     sendCatMessageBufferDirectly(g_cat_mergeBuf);
                     sdsclear(g_cat_mergeBuf);
                 }
@@ -144,31 +222,22 @@ void initCatSenderThread()
 
 void clearCatSenderThread()
 {
-    // µÈ´ýÏß³ÌÍË³ö
+    // 等待线程退出
     g_cat_senderStop = 1;
-    // É¾³ýÏß³Ì
+    // 删除线程
 
 #ifdef _WIN32
-    // Èç¹ûµÈ´ýÒ»Ãë»¹Ã»ÓÐ½áÊø£¬ÔòÈÏÎªÊÇÓÐÎÊÌâµÄ£¬´ËÊ±Ç¿ÖÆ½áÊøÏß³Ì
+    // 如果等待一秒还没有结束，则认为是有问题的，此时强制结束线程
     if (WAIT_OBJECT_0 != WaitForSingleObject(g_cat_senderHandle, 1000))
     {
         TerminateThread(g_cat_senderHandle, 0);
     }
     CloseHandle(g_cat_senderHandle);
 #else
-    struct timespec ts;
-    if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
-    {
-        /* Handle error */
-    }
 
-    ts.tv_sec += 1;
-    if (pthread_timedjoin_np(g_cat_senderHandle, NULL, &ts) != 0)
-    {
-        pthread_cancel(g_cat_senderHandle);
-    }
+    pthread_join(g_cat_senderHandle, NULL);
 #endif // _WIN32
-    // É¾³ýg_cat_bufferQueue
+    // 删除g_cat_bufferQueue
 	size_t i = 0;
     for (; i < getZRSafeQueueSize(g_cat_bufferQueue); ++i)
     {

@@ -21,7 +21,7 @@ int catClientInit()
     }
 #endif
     initCatClientConfig();
-    catMessageManagerInitialize(g_config.domain, g_config.host);
+    catMessageManagerInitialize(g_config.domain, g_config.selfHost);
     initMessageIdHelper();
     initCatSenderThread();
     initCatMergeAndEncodeThread();
@@ -141,6 +141,25 @@ void logTraceWithCodeLocation(const char * type, const char * name, const char *
     trace->setComplete(trace);
 }
 
+
+void logErrorWithCodeLocation(const char * type, const char * name, const char * data, const char * fileName, const char * funcationName, int lineNo)
+{
+    CatEvent * event = newEvent(type, name);
+    catChecktPtr(event);
+    if (data != NULL)
+    {
+        event->addDataPair(event, data);
+    }
+    event->addData(event, "fileName", fileName);
+    event->addData(event, "funcationName", funcationName);
+    sds lineStr = sdsfromlonglong(lineNo);
+    catChecktPtr(lineStr);
+    event->addData(event, "lineNo", lineStr);
+    sdsfree(lineStr);
+    event->setStatus(event, CAT_SUCCESS);
+    event->setComplete(event);
+}
+
 CatEvent * newEvent(const char * type, const char * name)
 {
     getCatContext();
@@ -185,4 +204,5 @@ CatTransaction * newTransaction(const char * type, const char * name)
     catChecktPtr(trans);
     return trans;
 }
+
 

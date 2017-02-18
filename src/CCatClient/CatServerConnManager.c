@@ -5,6 +5,7 @@
 #include "anet.h"
 #include "CLog.h"
 #include "CatMessageManager.h"
+#include "ae.h"
 
 
 static sds g_server_responseBody = NULL;
@@ -23,18 +24,19 @@ extern CatMessageManager g_cat_messageManager;
 extern char g_cat_send_ip[64];
 extern unsigned short g_cat_send_port;
 extern int g_cat_send_fd;
+extern int g_cat_send_failedFlag;
 
 static int tryConnBestServer()
 {
     int newFd = -1;
     int oldFd = -1;
-    // @todo for wyp Ä¿Ç°²ßÂÔ¾ÍÊÇ¼òµ¥µÄÈ¥Á¬µÚÒ»¸ö·þÎñÆ÷
+    // @todo for wyp 目前策略就是简单的去连第一个服务器
     if (g_server_activeId == 0)
     {
         return 1;
     }
     int ipValidNum = g_server_activeId;
-    // Èç¹ûµ±Ç°Ê§Ð§£¬Ôò´ÓËùÓÐ·þÎñÆ÷ÁÐ±íÖÐÕÒµ½Ò»¸ö¿ÉÓÃ·þÎñÆ÷
+    // 如果当前失效，则从所有服务器列表中找到一个可用服务器
     if (ipValidNum < 0)
     {
         ipValidNum = g_server_count;
@@ -43,20 +45,40 @@ static int tryConnBestServer()
 	int i = 0;
     for (; i < ipValidNum; ++i)
     {
-        // @todo ,Õâ±ßÄ¬ÈÏÏÈÉèÖÃ³É×èÈû
-        newFd = anetTcpConnect(NULL, g_server_ips[i], g_server_ports[i]);
+        INNER_LOG(CLOG_INFO, "Try connect to server %s:%d.",
+                  g_server_ips[i], (int)g_server_ports[i]);
+        newFd = anetTcpNonBlockConnect(NULL, g_server_ips[i], g_server_ports[i]);
         if (newFd > 0)
         {
-            g_server_activeId = i;
-            strcpy(g_cat_send_ip, g_server_ips[i]);
-            g_cat_send_port = g_server_ports[i];
-            oldFd = g_cat_send_fd;
-            g_cat_send_fd = newFd;
-            if (oldFd > 0)
+            // wait newFd to be writable
+            // @todo for wyp, default 200ms
+            int retVal = 0;
+#ifdef WIN32
+            retVal = aeWait(newFd, AE_WRITABLE, 200);
+#else
+            retVal = aeWait(newFd, AE_WRITABLE | AE_ERROR | AE_HUP, 200);
+#endif
+            if (retVal > 0 && !(retVal & AE_ERROR) && (retVal & AE_WRITABLE))
             {
-                anetClose(oldFd);
+                INNER_LOG(CLOG_INFO, "Connect success.");
+                g_server_activeId = i;
+                strcpy(g_cat_send_ip, g_server_ips[i]);
+                g_cat_send_port = g_server_ports[i];
+                oldFd = g_cat_send_fd;
+                g_cat_send_fd = newFd;
+                if (oldFd > 0)
+                {
+                    anetClose(oldFd);
+                }
+                return 1;
             }
-            return 1;
+            else
+            {
+                INNER_LOG(CLOG_WARNING, "Cannot connect to server %s:%d.", 
+                          g_server_ips[i], (int)g_server_ports[i]);
+                anetClose(newFd);
+            }
+
         }
     }
     return 0;
@@ -129,7 +151,7 @@ static int resolveServerIps()
 
     ZRCS_ENTER(g_server_lock);
 
-    // Èç¹ûÕâ´ÎÇëÇóµ½IP£¬ÐèÒª°ÑÉÏ´Î±£´æµÄÉ¾³ý
+    // 已经获取到新的server，把之前保存的删除
     for (i = 0; i < g_server_count; ++i)
     {
         sdsfree(g_server_ips[i]);
@@ -165,12 +187,33 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     {
         return 0;
     }
-    sockfd = anetTcpConnect(NULL, destIP, port);
+    INNER_LOG(CLOG_INFO, "Start connect to router server %s : %d.", destIP, (int)port);
+    sockfd = anetTcpNonBlockConnect(NULL, destIP, port);
     if (sockfd < 0)
     {
-        INNER_LOG(CLOG_WARNING, "Ïò·þÎñÆ÷ %s %d·¢ÆðÁ¬½ÓÊ§°Ü.", destIP, port);
+        INNER_LOG(CLOG_WARNING, "Connect to router server %s : %d Error.", destIP, (int)port);
         return 0;
     }
+
+    // wait newFd to be writable
+    // @todo for wyp, default 200ms
+    int retVal = 0;
+#ifdef WIN32
+    retVal = aeWait(sockfd, AE_WRITABLE, 200);
+#else
+    retVal = aeWait(sockfd, AE_WRITABLE | AE_ERROR | AE_HUP, 200);
+#endif
+	if (retVal > 0 && !(retVal & AE_ERROR) && (retVal & AE_WRITABLE))
+    {
+        INNER_LOG(CLOG_INFO, "Connect to router server %s : %d Success.", destIP, (int)port);
+    }
+    else
+    {
+        INNER_LOG(CLOG_WARNING, "Connect to router server %s : %d Error, timeout.", destIP, (int)port);
+        anetClose(sockfd);
+        return 0;
+    }
+
     sdsclear(g_server_requestBuf);
     if (port == 80)
     {
@@ -183,14 +226,15 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     }
     g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Host %s\r\n", hostName);
     g_server_requestBuf = sdscatprintf(g_server_requestBuf, "Connection: close\r\n\r\n");
-    int status = anetWrite(sockfd, g_server_requestBuf, sdslen(g_server_requestBuf));
+    int status = anetBlockWriteTime(sockfd, g_server_requestBuf, sdslen(g_server_requestBuf), 100);
     if (status == ANET_ERR)
     {
         anetClose(sockfd);
         return 0;
     }
     char resp[1024];
-    status = anetRead(sockfd, resp, 1023);
+    // wait 200 ms
+    status = anetBlockReadTime(sockfd, resp, 1023, 200);
     if (status == ANET_ERR || status < 4)
     {
         anetClose(sockfd);
@@ -217,13 +261,13 @@ static int getRouterFromServer(char * hostName, unsigned short port, char * doma
     }
     else
     {
-        // Èç¹ûÁ½´ÎÏàÍ¬¾Í²»ÐèÒªÇ¿ÐÐ¸üÐÂ
+        // 如果两次相同就不需要强行更新
         if (strcmp(g_server_responseBody, body) == 0)
         {
             return g_server_count;
         }
     }
-    INNER_LOG(CLOG_INFO, "Ïò·þÎñÆ÷²éÑ¯µ½¿ÉÓÃ·þÎñÆ÷ÁÐ±í %s .", body);
+    INNER_LOG(CLOG_INFO, "向服务器查询到可用服务器列表 %s .", body);
     sdscpy(g_server_responseBody, body);
     return resolveServerIps();
 }
@@ -236,13 +280,14 @@ int recoverCatServerConn()
     g_server_activeId = -1;
     if (!tryConnBestServer())
     {
-        INNER_LOG(CLOG_WARNING, "Ö±½Ó»Ö¸´Óë·þÎñÆ÷Á¬½ÓÊ§°Ü, ³¢ÊÔ¸üÐÂÂ·ÓÉ.");
+        INNER_LOG(CLOG_WARNING, "直接恢复与服务器连接失败, 尝试更新路由.");
         if (!updateCatServerConn())
         {
-            INNER_LOG(CLOG_ERROR, "ÔÙ´Î³¢ÊÔÊ§°Ü£¬·þÎñÆ÷µ±Ç°²»¿ÉÓÃ.");
+            INNER_LOG(CLOG_ERROR, "再次尝试失败，服务器当前不可用.");
             return 0;
         }
     }
+    g_cat_send_failedFlag = 1;
     return 1;
 }
 
@@ -250,7 +295,7 @@ int initCatServerConnManager()
 {
     g_server_lock = ZRCreateCriticalSection();
 
-    // ÏÈ´ÓÅäÖÃÄÇ±ß¶Á¹ýÀ´³õÊ¼µÄ·þÎñÆ÷ÅäÖÃ£¬ÕâÑù¼´Ê¹ÔÚrouter·þÎñÆ÷²»¿ÉÓÃµÄÇé¿öÏÂÒ²¿ÉÒÔÁ¬½Óserver
+    // 先从配置那边读过来初始的服务器配置，这样即使在router服务器不可用的情况下也可以连接server
     g_server_count = g_config.serverNum;
     if (g_server_count > 64)
     {
@@ -286,19 +331,23 @@ void clearCatServerConnManager()
 }
 int updateCatServerConn()
 {
-    // @todo for wyp Õâ±ß²»ÖªµÀ¾ßÌåÁ¬ÄÇ¸ö¶Ë¿Ú¡£¡£¡£ÊÇÅäÖÃ»¹ÊÇÓÃ»§Ìî»¹ÊÇÄ¬ÈÏ£¿
-    int rst = getRouterFromServer(g_cat_messageManager.m_hostname, 8080, g_cat_messageManager.m_domain);
+    int rst = getRouterFromServer(g_config.serverHost, g_config.serverPort, g_cat_messageManager.m_domain);
     //if (rst > 0)
     {
         updateCatActiveConnIndex();
         if (tryConnBestServer() == 0)
         {
+            g_cat_send_failedFlag = 1;
             return 0;
         }
         else
         {
+
+            g_cat_send_failedFlag = 0;
             return 1;
         }
     }
+
+    g_cat_send_failedFlag = 1;
     return 0;
 }

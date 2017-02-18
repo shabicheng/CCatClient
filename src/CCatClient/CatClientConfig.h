@@ -7,7 +7,9 @@
 typedef struct _CatClientConfig
 {
     sds domain;
-    sds host;
+    sds selfHost;
+    sds serverHost;
+    unsigned short serverPort;
     int serverNum;
     sds * serverAddresses;
     int messageEnableFlag;

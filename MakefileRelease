@@ -1,0 +1,10 @@
+.PHONY: clean All
+
+All:
+	@echo "----------Building project:[ CCatClientTest - Release ]----------"
+	@cd "CodeLite/CCatClientTest" && "$(MAKE)" -f  "CCatClientTestRelease.mk"
+	@cd "CodeLite/CCatClient" && "$(MAKE)" -f  "CCatClientRelease.mk"
+clean:
+	@echo "----------Cleaning project:[ CCatClientTest - Release ]----------"
+	@cd "CodeLite/CCatClientTest" && "$(MAKE)" -f  "CCatClientTestRelease.mk" clean
+	@cd "CodeLite/CCatClient" && "$(MAKE)" -f  "CCatClientRelease.mk" clean

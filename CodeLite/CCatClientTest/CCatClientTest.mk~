@@ -5,8 +5,8 @@
 ## Debug
 ProjectName            :=CCatClientTest
 ConfigurationName      :=Debug
-WorkspacePath          := "../../"
-ProjectPath            := "../../CodeLite/CCatClientTest"
+WorkspacePath          := "/home/zc/Documents/CCatClient"
+ProjectPath            := "/home/zc/Documents/CCatClient/CodeLite/CCatClientTest"
 IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
@@ -92,7 +92,7 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(ObjectSuffix): ../../src/CCatClientTest/CatTestMain.cpp $(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "../../src/CCatClientTest/CatTestMain.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/zc/Documents/CCatClient/src/CCatClientTest/CatTestMain.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(DependSuffix): ../../src/CCatClientTest/CatTestMain.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/CCatClientTest_CatTestMain.cpp$(DependSuffix) -MM "../../src/CCatClientTest/CatTestMain.cpp"
 

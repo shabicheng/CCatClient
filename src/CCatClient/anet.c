@@ -76,6 +76,8 @@
 #endif
 
 #include "anet.h"
+#include "ae.h"
+#include "TimeUtility.h"
 
 static void anetSetError(char *err, const char *fmt, ...)
 {
@@ -254,9 +256,11 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
         if (gethostname(hostname, sizeof(hostname)) == 0)
         {
             host = hostname;
+            printf("HostName : %s \n", hostname);
         }
         else
         {
+            printf("GetHostName Error \n");
             return ANET_ERR;
         }
     }
@@ -344,6 +348,8 @@ int anetGenericResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len,
     return ANET_OK;
 }
 
+
+
 int anetResolve(char *err, char *host, char *ipbuf, size_t ipbuf_len) {
     return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_NONE, 0);
 }
@@ -352,6 +358,23 @@ int anetResolveIP(char *err, char *host, char *ipbuf, size_t ipbuf_len) {
     return anetGenericResolve(err,host,ipbuf,ipbuf_len,ANET_IP_ONLY, 0);
 }
 
+
+int anetGetHost(char *err, char *host, size_t ipbuf_len)
+{
+    if (host != NULL)
+    {
+        if (gethostname(host, ipbuf_len) == 0)
+        {
+            printf("anetGetHost Name : %s \n", host);
+            return ANET_OK;
+        }
+        else
+        {
+            printf("GetHostName Error \n");
+        }
+    }
+    return ANET_ERR;
+}
 
 int anetResolveIPHex(char *err, char *host, char *ipbuf, size_t ipbuf_len)
 {
@@ -415,8 +438,19 @@ static int anetTcpGenericConnect(char *err, char *addr, int port, int flags)
         if (connect(s,p->ai_addr,p->ai_addrlen) == -1) {
             /* If the socket is non-blocking, it is ok for connect() to
              * return an EINPROGRESS error here. */
+
+#ifdef WIN32
+            int rst = WSAGetLastError();
+            if (rst == WSAEWOULDBLOCK && flags & ANET_CONNECT_NONBLOCK)
+                goto end;
+
+#else
+
+
             if (errno == EINPROGRESS && flags & ANET_CONNECT_NONBLOCK)
                 goto end;
+
+#endif
             close(s);
             s = ANET_ERR;
             continue;
@@ -489,9 +523,16 @@ int anetUnixNonBlockConnect(char *err, char *path)
 
 /* Like read(2) but make sure 'count' is read before to return
  * (unless error or EOF condition is encountered) */
-int anetRead(int fd, char *buf, int count)
+static int anetReadWidthType(int fd, char *buf, int count, int flag, int waitMs)
 {
     int nread, totlen = 0;
+    unsigned long long timeBegin = 0;
+    unsigned long long nowTime = 0;
+    if (flag == 2)
+    {
+        timeBegin = GetTime64();
+        nowTime = timeBegin;
+    }
     while(totlen != count) {
 #ifdef WIN32
         nread = recv(fd, buf, count - totlen, 0);
@@ -500,7 +541,43 @@ int anetRead(int fd, char *buf, int count)
         nread = read(fd, buf, count - totlen);
 #endif
         if (nread == 0) return totlen;
-        if (nread == -1) return -1;
+        if (nread == -1)
+        {
+#ifdef WIN32
+            if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+            if (errno == EAGAIN)
+#endif
+            {
+                nread = 0;
+                if (flag == 1)
+                {
+                    // wait 100 ms
+                    aeWait(fd, AE_READABLE, 100);
+                }
+                else if (flag = 2)
+                {
+
+                    nowTime = GetTime64();
+                    if (nowTime - timeBegin > waitMs)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        aeWait(fd, AE_WRITABLE, waitMs - (nowTime - timeBegin));
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+        }
         totlen += nread;
         buf += nread;
     }
@@ -509,9 +586,16 @@ int anetRead(int fd, char *buf, int count)
 
 /* Like write(2) but make sure 'count' is read before to return
  * (unless error is encountered) */
-int anetWrite(int fd, char *buf, int count)
+static int anetWriteWidthType(int fd, char *buf, int count, int flag, int waitMs)
 {
     int nwritten, totlen = 0;
+    unsigned long long timeBegin = 0;
+    unsigned long long nowTime = 0;
+    if (flag == 2)
+    {
+        timeBegin = GetTime64();
+        nowTime = timeBegin;
+    }
     while(totlen != count) {
 #ifdef WIN32
         nwritten = send(fd, buf, count - totlen, 0);
@@ -519,12 +603,87 @@ int anetWrite(int fd, char *buf, int count)
         nwritten = write(fd, buf, count - totlen);
 #endif
         //if (nwritten == 0) return totlen;
-        if (nwritten == -1) return -1;
+
+        if (nwritten == -1)
+        {
+
+#ifdef WIN32
+            if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+            if (errno == EAGAIN)
+#endif
+            {
+                nwritten = 0;
+                if (flag == 1)
+                {
+                    // wait 100 ms
+                    aeWait(fd, AE_WRITABLE, 100);
+                }
+                else if (flag = 2)
+                {
+
+                    nowTime = GetTime64();
+                    if (nowTime - timeBegin > waitMs)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        aeWait(fd, AE_WRITABLE, waitMs - (nowTime - timeBegin));
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+        }
         totlen += nwritten;
         buf += nwritten;
     }
     return totlen;
 }
+
+int anetBlockRead(int fd, char *buf, int count)
+{
+    return anetReadWidthType(fd, buf, count, 1, 0);
+}
+
+int anetBlockWrite(int fd, char *buf, int count)
+{
+    return anetWriteWidthType(fd, buf, count, 1, 0);
+}
+
+int anetNoBlockRead(int fd, char *buf, int count)
+{
+    return anetReadWidthType(fd, buf, count, 0, 0);
+
+}
+
+int anetNoBlockWrite(int fd, char *buf, int count)
+{
+    return anetWriteWidthType(fd, buf, count, 0, 0);
+
+}
+
+
+int anetBlockReadTime(int fd, char *buf, int count, int waitMs)
+{
+    return anetReadWidthType(fd, buf, count, 2, waitMs);
+
+}
+
+int anetBlockWriteTime(int fd, char *buf, int count, int waitMs)
+{
+
+    return anetWriteWidthType(fd, buf, count, 2, waitMs);
+}
+
+
 
 static int anetListen(char *err, int s, struct sockaddr *sa, socklen_t len, int backlog) {
     if (bind(s,sa,len) == -1) {

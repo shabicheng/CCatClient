@@ -1,19 +1,26 @@
-#include "CatClientConfig.h"
+﻿#include "CatClientConfig.h"
 #include <string.h>
 #include <stdlib.h>
 #include "CLog.h"
+#include "anet.h"
 CatClientConfig g_config;
 
 
 extern unsigned char g_log_permissionOpt;
 
 // @todo for wyp
-// ÅäÖÃÎÄ¼þ¼ÓÔØÒÔ¼°Ò»Ð©³õÊ¼»¯²ÎÊý×Ô¼ºÀ´Ð´
+// 配置文件加载以及一些初始化参数自己来写
 void initCatClientConfig()
 {
     memset(&g_config, 0, sizeof(g_config));
     g_config.domain = sdsnew("CCatClient");
-    g_config.host = sdsnew("192.168.110.159");
+    g_config.selfHost = sdsnewEmpty(128);
+    if (anetGetHost(NULL, g_config.selfHost, 128) == ANET_ERR)
+    {
+        sdscpy(g_config.selfHost, "CUnknownHost");
+    }
+    g_config.serverHost = sdsnew("192.168.110.159");
+    g_config.serverPort = 8080;
     g_config.serverNum = 2;
     g_config.serverAddresses = (sds *)malloc(g_config.serverNum * sizeof(sds));
     g_config.serverAddresses[0] = sdsnew("192.168.110.159:2280");

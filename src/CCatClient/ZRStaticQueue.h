@@ -11,8 +11,8 @@
 typedef struct _ZRStaticQueue
 {
 	size_t maxQueueSize;
-	volatile size_t head;
-	volatile size_t tail;
+	volatile int head;
+	volatile int tail;
     volatile size_t size;
     void * valueArray[];
 }ZRStaticQueue;

@@ -7,8 +7,8 @@
 // @Last Modified On 11-19-2015
 // 
 // @copyright        Copyright (c) ZhenRong. All rights reserved.
-// @summary          Ê±¼ä²Ù×÷µÄÒ»Ð©¹«¹²Àà£¬ÎÒÃÇ°ÑÊ±¼ä±íÊ¾Îª64Î»ÕûÐÎ£¬²¢Ìá¹©Ò»Ð©²Ù×÷º¯Êý
-//                   ÔÚÕâÀïÃæ»¹Ìá¹©ÁË¸ß¾«¶È¼ÆÊ±µÄÒ»Ð©º¯Êý£¬¶àÓÃÓÚ²âÊÔ´úÂëÔËÐÐÊ±¼ä
+// @summary          时间操作的一些公共类，我们把时间表示为64位整形，并提供一些操作函数
+//                   在这里面还提供了高精度计时的一些函数，多用于测试代码运行时间
 // **************************************************************************************************/
 
 #ifndef  _TIMEUTILITY_
@@ -23,8 +23,8 @@
 
 /**********************************
 Function:	 GetTime64
-Description: »ñÈ¡ÏµÍ³64Î»Ê±¼ä£¬Ê±¼ä/1000Îªseconds since midnight, January 1, 1970(UTC)
-			 Ê±¼ä %1000 ÎªºÁÃë
+Description: 获取系统64位时间，时间/1000为seconds since midnight, January 1, 1970(UTC)
+			 时间 %1000 为毫秒
 Return: u_int64
 ***********************************/
 static u_int64 inline GetTime64()
@@ -45,8 +45,8 @@ static u_int64 inline GetTime64()
 }
 /**********************************
 Function:	 GetTimeIntervalLength64
-Description: »ñÈ¡Á½¸öÊ±¼äÇø¼ä³¤¶È£¬µ¥Î»ºÁÃë
-Input:		 u_int64 oldTime ¿¿Ç°µÄÊ±¼ä, u_int64 newTime ¿¿ºóµÄÊ±¼ä
+Description: 获取两个时间区间长度，单位毫秒
+Input:		 u_int64 oldTime 靠前的时间, u_int64 newTime 靠后的时间
 Return:		 u_int64
 ***********************************/
 static int64 inline GetTimeIntervalLength64(u_int64 oldTime, u_int64 newTime)
@@ -56,14 +56,14 @@ static int64 inline GetTimeIntervalLength64(u_int64 oldTime, u_int64 newTime)
 
 /**********************************
 Function:	 SetNowTime
-Description: ÉèÖÃÏµÍ³µ±Ç°Ê±¼ä
+Description: 设置系统当前时间
 Input:		 u_int64 nowTime
 Return:		 bool
 ***********************************/
 static int inline SetNowTime(u_int64 nowTime)
 {
 #ifdef WIN32
-	//¸üÐÂ±¾µØÏµÍ³Ê±¼ä
+	//更新本地系统时间
 	SYSTEMTIME curr_st;
 	struct tm *local = NULL;
 	time_t tt = nowTime / 1000;
@@ -101,7 +101,7 @@ static int inline SetNowTime(u_int64 nowTime)
 
 /**********************************
 Function:	 GetTimeIncrementLength64
-Description: ¼ÆËãÊ±¼äÔöÁ¿£¬Ôö¼ÓµÄµ¥Î»Îªms
+Description: 计算时间增量，增加的单位为ms
 Input:		 u_int64 srcTime, u_int64 incTime
 Return:		 u_int64
 ***********************************/
@@ -114,8 +114,8 @@ static u_int64 inline GetTimeIncrementLength64(u_int64 srcTime, int64 incTime)
 
 /**********************************
 Function:	 GetTimeString
-Description: »ñÈ¡Ê±¼ä£¬¸ñÊ½Îª2013-10-11 23:21:16
-Input:		 u_int64 srcTime = 0,Èç¹ûsrcTimeÎª0£¬ÔòÊ¹ÓÃµ±Ç°Ê±¼ä£¬·ñÔòÊ¹ÓÃsrcTimeÊ±¼ä
+Description: 获取时间，格式为2013-10-11 23:21:16
+Input:		 u_int64 srcTime = 0,如果srcTime为0，则使用当前时间，否则使用srcTime时间
 Return:		 string
 ***********************************/
 char *  GetTimeString(u_int64 srcTime);
@@ -138,8 +138,8 @@ static int inline GetTimeHour(u_int64 timeV)
 
 /**********************************
 Function:	 GetDetailTimeString
-Description: »ñÈ¡Ê±¼ä£¬¸ñÊ½Îª2013-10-11 23:21:16
-Input:		 u_int64 srcTime = 0,Èç¹ûsrcTimeÎª0£¬ÔòÊ¹ÓÃµ±Ç°Ê±¼ä£¬·ñÔòÊ¹ÓÃsrcTimeÊ±¼ä
+Description: 获取时间，格式为2013-10-11 23:21:16
+Input:		 u_int64 srcTime = 0,如果srcTime为0，则使用当前时间，否则使用srcTime时间
 Return:		 string
 ***********************************/
 char *  GetDetailTimeString(u_int64 srcTime);
@@ -150,9 +150,9 @@ char * GetCatTimeString(u_int64 srcTime);
 
 /**********************************
 Function:	 GetPerformanceFrequency
-Description: »ñÈ¡¾«È·¶¨Ê±Æ÷ÆµÂÊ
+Description: 获取精确定时器频率
 Input:		
-Return:		 true»ñµÃ³É¹¦ false±íÊ¾²»Ö§³Ö¾«È·¶¨Ê±
+Return:		 true获得成功 false表示不支持精确定时
 ***********************************/
 static int inline GetPerformanceFrequency(int64 * frequence)
 {
@@ -184,9 +184,10 @@ static int64 inline GetPerformanceCounter()
 	QueryPerformanceCounter(&c);
 	return c.QuadPart;
 #elif defined(__linux)
-	struct timespec timeNow = {0, 0};
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timeNow);
-	return (int64)timeNow.tv_sec * 1000000000 + timeNow.tv_nsec;
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+	return (int64)tv.tv_sec * 1000000 + tv.tv_usec;
 #else
 
 #endif //WIN32
@@ -194,7 +195,7 @@ static int64 inline GetPerformanceCounter()
 }
 
 
-//Ê±¼äÇø¼ä
+//时间区间
 typedef struct _TimeInterval
 {
 	u_int64 time_s;
@@ -203,10 +204,10 @@ typedef struct _TimeInterval
 
 /**********************************
 Function:	 TimeIntervalCompare
-Description: Ê±¼äÇø¼äµÄ±È½Ï£¬Ö÷ÒªÊÇ·´Ó¦desµÄÇø¼äÓëresÖØºÏ³Ì¶È
+Description: 时间区间的比较，主要是反应des的区间与res重合程度
 Input:		 TimeInterval & resInterval, TimeInterval & desInterval
 Return:	
-Others:      ·µ»ØÖµÊÇrst,rst =0±íÊ¾Ã»ÓÐÖØºÏ£¬ÆäËû·µ»ØÖµ²Î¼û×¢ÊÍ
+Others:      返回值是rst,rst =0表示没有重合，其他返回值参见注释
 ***********************************/
 static inline u_int8 TimeIntervalCompare(TimeInterval * resInterval, TimeInterval  *desInterval)
 {

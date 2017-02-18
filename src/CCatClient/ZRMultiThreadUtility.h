@@ -7,7 +7,7 @@
 // @Last Modified On 11-17-2015
 // 
 // @copyright        Copyright (c) ZhenRong. All rights reserved.
-// @summary          ¶àÏß³Ì²Ù×÷µÄÒ»Ð©»ù±¾×ÊÔ´·â×°£¬ÐÅºÅÁ¿¡¢»¥³âËø¡¢ÁÙ½çÇø
+// @summary          多线程操作的一些基本资源封装，信号量、互斥锁、临界区
 // **************************************************************************************************/
 #ifndef _ZRMULTITHREADUTILITY_
 #define _ZRMULTITHREADUTILITY_
@@ -15,14 +15,14 @@
 #include "ZRLibraryGlobal.h"
 
 
-//ÒÔÏÂÎª¸÷ÖÖºÍ²Ù×÷ÏµÍ³×ÊÔ´Ïà¹ØµÄ¹¤¾ßºê¶¨Òå
+//以下为各种和操作系统资源相关的工具宏定义
 #ifdef WIN32
-/// * @brief    /ÁÙ½çÇø×ÊÔ´
+/// * @brief    /临界区资源
 typedef LPCRITICAL_SECTION ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 /// *************************************************************************************************
 /// * @fn       ZRCreateCriticalSection
-/// * @brief    ´´½¨»¥³âËø.
+/// * @brief    创建互斥锁.
 /// * @param    spinCount  The spin count.
 /// * @returns    ZRCRITICALSECTION.
 /// * 
@@ -50,7 +50,7 @@ static inline ZRCRITICALSECTION ZRCreateCriticalSection()
 }
 /// *************************************************************************************************
 /// * @fn       ZRDeleteCriticalSection
-/// * @brief    É¾³ý»¥³âËø
+/// * @brief    删除互斥锁
 /// * @param    cs  The cs.
 /// * 
 /// * @details  
@@ -71,49 +71,49 @@ static inline void ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 	}
 }
 
-/// * @brief    ¼ÓËø
+/// * @brief    加锁
 #define ZRCS_ENTER(cs) EnterCriticalSection(cs)
-/// * @brief    ½âËø
+/// * @brief    解锁
 #define ZRCS_LEAVE(cs) LeaveCriticalSection(cs)
 
-/// * @brief    »¥³âËø£¬Îª¼æÈÝÒÑÓÐÏµÍ³
+/// * @brief    互斥锁，为兼容已有系统
 #define MUTEX CRITICAL_SECTION
-/// * @brief    ¼ÓËø
+/// * @brief    加锁
 #define MUTEX_LOCK(mutex) EnterCriticalSection(&mutex)
-/// * @brief    ½âËø
+/// * @brief    解锁
 #define MUTEX_UNLOCK(mutex) LeaveCriticalSection(&mutex)
-/// * @brief    »¥³âËø³õÊ¼»¯
+/// * @brief    互斥锁初始化
 #define MUTEX_INIT(mutex) InitializeCriticalSection(&mutex)
-/// * @brief    »¥³âËøÏú»Ù
+/// * @brief    互斥锁销毁
 #define MUTEX_DESTROY(mutex) DeleteCriticalSection(&mutex)
 
-//ÐÅºÅÁ¿×ÊÔ´
-/// * @brief    ÐÅºÅÁ¿
+//信号量资源
+/// * @brief    信号量
 typedef HANDLE SEMA;
-/// * @brief    µÈ´ýÐÅºÅÁ¿Ò»¶¨Ê±¼ä
+/// * @brief    等待信号量一定时间
 #define SEMA_WAIT_TIME(sema, delay) WaitForSingleObject(sema, delay)
-/// * @brief    Ò»Ö±×èÈûµØ½øÐÐµÈ´ýÐÅºÅÁ¿
+/// * @brief    一直阻塞地进行等待信号量
 #define SEMA_WAIT(sema) WaitForSingleObject(sema, INFINITE)
-/// * @brief    ÊÍ·ÅÐÅºÅÁ¿
+/// * @brief    释放信号量
 #define SEMA_POST(sema) ReleaseSemaphore(sema, 1, NULL)
-/// * @brief    ³¢ÊÔ»ñÈ¡Ò»¸öÐÅºÅÁ¿
+/// * @brief    尝试获取一个信号量
 #define SEMA_TRYWAIT(sema) WaitForSingleObject(sema, 0)
-/// * @brief    Ïú»ÙÐÅºÅÁ¿
+/// * @brief    销毁信号量
 #define SEMA_DESTROY(sema) CloseHandle(sema)
-/// * @brief    ³õÊ¼»¯ÐÅºÅÁ¿£¬ ÊäÈëµÄÎª£ºÐÅºÅÁ¿µÄ×î´óÖµ£¬³õÊ¼ÐÅºÅÁ¿¸öÊý
+/// * @brief    初始化信号量， 输入的为：信号量的最大值，初始信号量个数
 #define SEMA_INIT(sema, initCount, maxCount) sema = CreateSemaphore(NULL, initCount, maxCount, NULL)
-/// * @brief    ³õÊ¼Ò»¸ö´øÓÐÃû³ÆµÄÐÅºÅÁ¿£¬ÓÃÓÚ¶à½ø³Ì½»»¥
+/// * @brief    初始一个带有名称的信号量，用于多进程交互
 #define SEMA_INIT_NAME(sema, initCount, maxCount, semaName) sema = CreateSemaphore(NULL, initCount, maxCount, semaName)
-/// * @brief    ÐÅºÅÁ¿µÈ´ý³¬Ê±
+/// * @brief    信号量等待超时
 #define SEMA_WAIT_TIMEOUT WAIT_TIMEOUT
-/// * @brief    µÈ´ýµ½ÐÅºÅÁ¿
+/// * @brief    等待到信号量
 #define SEMA_WAIT_OK WAIT_OBJECT_0
 
 
 
 #elif defined(_VXWORKS)
 
-//ÁÙ½çÇø×ÊÔ´
+//临界区资源
 typedef SEM_ID ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 inline ZRCRITICALSECTION ZRCreateCriticalSection(int spinCount = 0)
@@ -139,7 +139,7 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 #define MUTEX_UNLOCK(mutex) semGive(mutex)
 #define MUTEX_INIT(mutex) mutex = semBCreate(SEM_Q_FIFO,SEM_FULL)
 #define MUTEX_DESTROY(mutex) semDelete(mutex)
-//ÐÅºÅÁ¿×ÊÔ´
+//信号量资源
 #define SEMA SEM_ID
 #define SEMA_WAIT_TIME(sema,delay) semTake(sema, delay)
 #define SEMA_WAIT(sema) semTake(sema, WAIT_FOREVER)
@@ -147,7 +147,7 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 #define SEMA_DESTROY(sema) semDelete(sema)
 #define SEMA_INIT(sema, initCount, maxCount) sema = semCCreate(SEM_Q_FIFO,initCount)
 #define SEMA_WAIT_TIMEOUT ERROR
-//Ïß³Ì×ÊÔ´
+//线程资源
 #define THREADID int
 #define SOCKET int
 #define closesocket(s_) close(s_)
@@ -157,14 +157,14 @@ inline void ZRDeleteCriticalSection(ZRCRITICALSECTION & cs)
 
 
 
-//ÁÙ½çÇø×ÊÔ´
+//临界区资源
 typedef pthread_mutex_t* ZRCRITICALSECTION;
 #define INVALID_CRITSECT NULL
 // !!!!!!!!!!!!!!!!
-// *×¢Òâ*
-// ÔÚLinuxÏÂµÄmutex²»ÄÜÉèÖÃ×ÔÐýµÈ´ýÊ±¼ä
-// ËùÒÔ¸Ãº¯ÊýµÄ²ÎÊý½«±»ºöÂÔ
-static inline ZRCRITICALSECTION ZRCreateCriticalSection()
+// *注意*
+// 在Linux下的mutex不能设置自旋等待时间
+// 所以该函数的参数将被忽略
+inline ZRCRITICALSECTION ZRCreateCriticalSection()
 {
 	ZRCRITICALSECTION cs = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	int ret;
@@ -206,16 +206,22 @@ static inline void ZRDeleteCriticalSection(ZRCRITICALSECTION cs)
 
 static inline int sema_wait_time_(sem_t* sema, unsigned int delay)
 {
-	struct timespec ts;
-	if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
-	{
-		return -1;
-	}
+    struct timespec ts;
+    
+    struct timeval tv;
 
-	ts.tv_sec += delay / 1000;
-	ts.tv_nsec = (delay % 1000) * 1000000;
-	ts.tv_sec += ts.tv_nsec / 1000000000;
-	ts.tv_nsec %= 1000000000;
+    gettimeofday(&tv, NULL);
+    tv.tv_usec += (delay % 1000) * 1000;
+    tv.tv_sec += delay / 1000;
+    if (tv.tv_usec > 1000000)
+    {
+        tv.tv_usec -= 1000000;
+        ++tv.tv_sec;
+    }
+
+
+	ts.tv_sec = tv.tv_sec;
+	ts.tv_nsec = tv.tv_usec * 1000;
 
 	return sem_timedwait(sema, &ts) == 0 ? 0 : ETIMEDOUT;
 }
@@ -234,8 +240,8 @@ static inline int sema_wait_time_(sem_t* sema, unsigned int delay)
 
 
 
-// ÍøÂçSocket×ÊÔ´
-typedef int SOCKET;
+// 网络Socket资源
+//typedef int SOCKET;
 
 typedef struct _FILETIME
 {

@@ -39,6 +39,8 @@
 #define AE_NONE 0
 #define AE_READABLE 1
 #define AE_WRITABLE 2
+#define AE_ERROR 4
+#define AE_HUP 8
 
 #define AE_FILE_EVENTS 1
 #define AE_TIME_EVENTS 2
@@ -96,7 +98,8 @@ typedef struct _aeEventLoop {
     int stop;
     void *apidata; /* This is used for polling API specific data */
     aeBeforeSleepProc *beforesleep;
-} aeEventLoop;
+//} aeEventLoop;
+};
 
 /* Prototypes */
 aeEventLoop *aeCreateEventLoop(int setsize);

@@ -14,11 +14,11 @@ static void setMetricComplete(CatMessage * message)
 CatMetric * createCatMetric(const char *type, const char * name)
 {
 	CatMessageInner * pMetricInner = malloc(sizeof(CatMetric) + sizeof(CatMessageInner));
-	CatMetric * pMetric = (CatMetric *)((char *)pMetricInner + sizeof(CatMessageInner));
-	if (pMetric == NULL)
+	if (pMetricInner == NULL)
 	{
 		return NULL;
 	}
+	CatMetric * pMetric = (CatMetric *)((char *)pMetricInner + sizeof(CatMessageInner));
 	initCatMessage(pMetric, CatMessageType_Metric, type, name);
 
 	// …Ë÷√

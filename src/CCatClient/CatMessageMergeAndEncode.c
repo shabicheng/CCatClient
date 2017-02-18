@@ -71,7 +71,7 @@ static void* catMessageMergeAndEncodeFun(void* para)
         {
 
 
-            // ÅÐ¶ÏÊÇ·ñÐèÒªmerge
+            // 判断是否需要merge
             if (isAtomicMessage(pRootQueueMsg)) 
             {
                 CatTransaction * pTrans = NULL;
@@ -88,7 +88,7 @@ static void* catMessageMergeAndEncodeFun(void* para)
                     }
                     g_cat_mergeMessage->m_messageId = getNextMessageId();
                     pTrans->setStatus((CatMessage *)pTrans, CAT_SUCCESS);
-                    // Õâ±ßµÄCompleteÖ»ÊÇÉèÖÃcomplete±êÖ¾Î»
+                    // 这边的Complete只是设置complete标志位
                     CatMessageInner * msgInner = getInnerMsg(pTrans);
                     msgInner->setCompleteFlag((CatMessage *)pTrans, 1);
                     setCatMessageTimeStamp((CatMessage *)pTrans, getCatMessageTimeStamp(pAtomicMsg));
@@ -99,7 +99,7 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 }
 
                 pTrans->addChild(pTrans, pRootQueueMsg->m_rootMsg);
-                // ±»ÄÃ×ßÖ®ºóÒªÖÃÎªNULL
+                // 被拿走之后要置为NULL
                 pRootQueueMsg->m_rootMsg = NULL;
 
                 if (isCatTransaction(pAtomicMsg))
@@ -115,7 +115,7 @@ static void* catMessageMergeAndEncodeFun(void* para)
                 }
 
                 reuseMessageId(pRootQueueMsg->m_messageId);
-                // »ØÊÕÖ®ºóÒ²ÒªÖÃÎªNULL
+                // 回收之后也要置为NULL
                 pRootQueueMsg->m_messageId = NULL;
                 deleteCatRootMessage(pRootQueueMsg);
 
@@ -126,7 +126,7 @@ static void* catMessageMergeAndEncodeFun(void* para)
                     mergeFlushFlag = 1;
 
                     encodeAndSendBuffer(g_cat_mergeMessage); 
-                    // É¾³ýÖ®ºóÒªÖØÐÂ½¨Á¢
+                    // 删除之后要重新建立
                     g_cat_mergeMessage = createCatRootMessage();
                     catChecktPtr(g_cat_mergeMessage);
                 }
@@ -143,13 +143,13 @@ static void* catMessageMergeAndEncodeFun(void* para)
 
         if (!mergeFlushFlag && g_cat_mergeMessage->m_rootMsg != NULL)
         {
-            // ¼ì²éÊÇ·ñÐèÒªÇ¿ÖÆ·¢ËÍ£¬Ä¬ÈÏ10ÃëÇ¿ÖÆË¢ÐÂÒ»´Î
+            // 检查是否需要强制发送，默认10秒强制刷新一次
             if (GetTime64() - getCatMessageTimeStamp(g_cat_mergeMessage->m_rootMsg) > 10 * 1000)
             {
                 mergeFlushFlag = 1;
 
                 encodeAndSendBuffer(g_cat_mergeMessage);
-                // É¾³ýÖ®ºóÒªÖØÐÂ½¨Á¢
+                // 删除之后要重新建立
                 g_cat_mergeMessage = createCatRootMessage();
                 catChecktPtr(g_cat_mergeMessage);
             }
@@ -170,7 +170,7 @@ int sendRootMessage(CatRootMessage * pRootMsg)
     {
         if (g_cat_msgQueFullCount == 0 || g_cat_msgQueFullCount % 1000 == 0)
         {
-            INNER_LOG(CLOG_WARNING, "µ±Ç°root message¶ÓÁÐÒÑÂú.");
+            INNER_LOG(CLOG_WARNING, "当前root message队列已满.");
         }
         Sleep(1);
         ++g_cat_msgQueFullCount;
@@ -189,7 +189,7 @@ void initCatMergeAndEncodeThread()
     catChecktPtr(g_cat_mergeMessage);
     g_cat_mergeCount = 0;
     g_cat_mergeStop = 0;
-    // Ä¬ÈÏ¿ª4MµÄ»º³åÇø
+    // 默认开4M的缓冲区
     g_cat_encodeBuf = sdsnewEmpty(4 * 1024 * 1024);
 #ifdef WIN32
     g_cat_mergeAndEncodeHandle = _beginthreadex(NULL,
@@ -206,33 +206,23 @@ void initCatMergeAndEncodeThread()
 
 void clearCatMergeAndEncodeThread()
 {
-    // µÈ´ýÏß³ÌÍË³ö
+    // 等待线程退出
     g_cat_mergeStop = 1;
-    // É¾³ýÏß³Ì
+    // 删除线程
 
 #ifdef _WIN32
-    // Èç¹ûµÈ´ýÒ»Ãë»¹Ã»ÓÐ½áÊø£¬ÔòÈÏÎªÊÇÓÐÎÊÌâµÄ£¬´ËÊ±Ç¿ÖÆ½áÊøÏß³Ì
+    // 如果等待一秒还没有结束，则认为是有问题的，此时强制结束线程
     if (WAIT_OBJECT_0 != WaitForSingleObject(g_cat_mergeAndEncodeHandle, 1000))
     {
         TerminateThread(g_cat_mergeAndEncodeHandle, 0);
     }
     CloseHandle(g_cat_mergeAndEncodeHandle);
 #else
-    struct timespec ts;
-    if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
-    {
-        /* Handle error */
-    }
-
-    ts.tv_sec += 1;
-    if (pthread_timedjoin_np(g_cat_mergeAndEncodeHandle, NULL, &ts) != 0)
-    {
-        pthread_cancel(g_cat_mergeAndEncodeHandle);
-    }
+    pthread_join(g_cat_mergeAndEncodeHandle, NULL);
 #endif // _WIN32
-    // É¾³ýg_cat_messageQueue
+    // 删除g_cat_messageQueue
     deleteCatRootMessage(g_cat_mergeMessage);
-    // É¾³ýg_cat_mergeMessage
+    // 删除g_cat_mergeMessage
 	size_t i = 0;
     for (; i < getZRSafeQueueSize(g_cat_messageQueue); ++i)
     {

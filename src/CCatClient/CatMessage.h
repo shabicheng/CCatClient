@@ -19,15 +19,15 @@ typedef struct _CatMessage CatMessage;
 typedef struct _CatMessageInner
 {
 	char m_msgType;
-	char m_unused[3]; //4×Ö½Ú¶ÔÆë
+	char m_unused[3]; //4字节对齐
 	sds m_type;
 	sds m_name;
 	sds m_status;
 	sds m_data;
-	unsigned long long m_timeStampMs; //Í³Ò»º¬Òå£¬sec*1000 + ms
+	unsigned long long m_timeStampMs; //统一含义，sec*1000 + ms
 	int m_completeFlag;
 	void(*setCompleteFlag)  (CatMessage* message, int completeFlag);
-	void *(*clear)   (CatMessage* message); // ×¢Òâ clear·µ»ØÖµÊÇmallocµÄÊ×µØÖ·
+	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
 
 
 }CatMessageInner;
@@ -39,7 +39,7 @@ struct _CatMessage
 	void(*addData)   (CatMessage* message, const char *dataKey, const char * dataValue);
 	void(*setStatus) (CatMessage* message, const char *status);
 	void(*setComplete)  (CatMessage* message);
-	void *(*clear)   (CatMessage* message); // ×¢Òâ clear·µ»ØÖµÊÇmallocµÄÊ×µØÖ·
+	void *(*clear)   (CatMessage* message); // 注意 clear返回值是malloc的首地址
 };
 
 
@@ -85,7 +85,7 @@ static inline sds getCatMessageType(CatMessage* message)
 }
 
 /**********************************************************************************************//**
- * msgÃ»ÓÐcreate·½·¨£¬Ö»ÓÐ³õÊ¼»¯·½·¨£¬ÇÒÖ»ÄÜ±»ÆäËû×ÓÀàµ÷ÓÃ.
+ * msg没有create方法，只有初始化方法，且只能被其他子类调用.
  *
  * @author	ZRZC
  * @date	2017/2/10
